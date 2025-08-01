@@ -15,8 +15,17 @@ enum GenType
 };
 
 
-template<GenType Type>
-class MoveGenerator 
-{
-    static void generate(const Position& pos, MoveList& move_list);
-};
+
+template <GenType Type>
+void generate(const Position& pos, MoveList& move_list);
+
+
+
+
+extern template void generate<QUIETS>(const Position& pos, MoveList& move_list);
+extern template void generate<CAPTURES>(const Position& pos, MoveList& move_list);
+extern template void generate<NON_EVASIONS>(const Position& pos, MoveList& move_list);
+extern template void generate<EVASIONS>(const Position& pos, MoveList& move_list);
+extern template void generate<LEGAL>(const Position& pos, MoveList& move_list);
+extern template void generate<ALL>(const Position& pos, MoveList& move_list);
+

@@ -132,7 +132,7 @@ Position::Position()
 
 void Position::init()
 {
-    fen_parser(perft_3);
+    fen_parser(perft_4);
     init_between();
     AttackTables attacks;
 
@@ -150,14 +150,14 @@ void Position::init_between()
     }
 }
 
-Square const Position::get_king_square(Color color)
+Square Position::get_king_square(Color color) const
 {
     assert(get_piece(color, KING) != 0);
     return lsb(get_piece(color, KING));
 }
 
 
-Bitboard const Position::get_piece(Color color, PieceType piece) 
+Bitboard Position::get_piece(Color color, PieceType piece) const
 {
     return piece_bb[piece] & color_bb[color];
 }
@@ -198,26 +198,16 @@ void Position::set_pins_info(Color color)
     }
 }
 
-void set_check_info(Color color)
+void Position::set_check_info(Color color)
 {
-
+    set_pins_info(color);
+    set_checkers();
 }
 
 
 bool Position::is_check()
 {
-    Color us = side_to_move;
-    Color enemy = side_to_move ^ 1;
-
-    for(Piece piece = KING; piece <= PAWN; piece++ )
-    {
-        if((state.check_squares[us][piece] & get_piece(enemy, (PieceType)piece)) != 0)
-        {
-            return true;
-        }
-    }
-
-    return false;
+    return state.checkers_bb != 0;
 }
 
 Bitboard Position::set_checkers()
@@ -228,9 +218,7 @@ Bitboard Position::set_checkers()
 
     for(Piece piece = KING; piece <= PAWN; piece++ )
     {
-
         Bitboard attacker = get_piece(enemy, (PieceType)piece);
-
         if((state.check_squares[us][piece] & attacker) != 0)
         {
             state.checkers_bb |= state.check_squares[us][piece] & attacker;

@@ -64,16 +64,14 @@ public:
     void init_between();
     Bitboard line_bb(Square s1, Square s2);
 
-    Bitboard const get_piece(Color color, PieceType Piece);
-    Square const get_king_square(Color color);
+    Bitboard get_piece(Color color, PieceType Piece) const ;
+    Square get_king_square(Color color) const ;
 
     void set_check_info(Color color);
     void set_check_squares(Color color);
     void set_pins_info(Color color);
     Bitboard set_checkers();
     bool is_check();
-
-    
 };
 
 
