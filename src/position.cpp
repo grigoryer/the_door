@@ -116,27 +116,35 @@ void Position::fen_parser(const std::string& fen)
         state.ep_num = ep_none; //none value
     }
 
-    if(half_move == "-" || parts.size() < fen_half_move + 1){ state.half_move = 0;}
+    if(half_move == "-" || parts[fen_half_move] == ""){ state.half_move = 0; }
     else { state.half_move = std::stoi(half_move); }
 
-    if(move == "-" || parts.size() < fen_full_move + 1 ){state.full_move = 0;}
-    else{state.full_move = std::stoi(move);}
+    if(move == "-" || parts[fen_full_move] == "" ){ state.full_move = 0; }
+    else{ state.full_move = std::stoi(move); }
 }
 
 
 Position::Position()
 {
+    fen_parser(STARTING_FEN);
+    init();
+}
+
+
+Position::Position(const std::string& fen)
+{
+    fen_parser(fen);
     init();
 }
 
 
 void Position::init()
 {
-    fen_parser(perft_4);
     init_between();
     AttackTables attacks;
-
     occupancy = color_bb[WHITE] | color_bb[BLACK];
+
+    set_check_info(side_to_move);
 }
 
 void Position::init_between()
@@ -200,14 +208,21 @@ void Position::set_pins_info(Color color)
 
 void Position::set_check_info(Color color)
 {
+    set_check_squares(color);
     set_pins_info(color);
     set_checkers();
 }
 
 
-bool Position::is_check()
+bool Position::is_check() const
 {
-    return state.checkers_bb != 0;
+    return bit_count(state.checkers_bb) != 0;
+}
+
+
+bool Position::is_double_check() const
+{
+    return bit_count(state.checkers_bb) > 1;
 }
 
 Bitboard Position::set_checkers()
@@ -225,4 +240,25 @@ Bitboard Position::set_checkers()
         }
     }
     return state.checkers_bb;
+}
+
+U8 Position::can_castle(Color color) const
+{
+    U8 output = NO_CASTLING;
+    if(color == WHITE)
+    {
+        if((WK & state.castling_rights) == WK && !get_bit(occupancy, f1) && !get_bit(occupancy, g1))
+        { output |= WK; }
+        if ((WQ & state.castling_rights) == WQ && !get_bit(occupancy, b1) && !get_bit(occupancy, c1) && !get_bit(occupancy, d1))
+        { output |= WQ; }
+        return output;
+    }
+    if(color == BLACK)
+    {
+        if((BK & state.castling_rights) == BK && !get_bit(occupancy, f8) && !get_bit(occupancy, g8))
+        { output |= BK; }
+        if ((BQ & state.castling_rights) == BQ && !get_bit(occupancy, b8) && !get_bit(occupancy, c8) && !get_bit(occupancy, d8))
+        { output |= BQ; }
+        return output;
+    }
 }

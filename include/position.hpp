@@ -1,5 +1,6 @@
 #pragma once
 #include "attack.hpp"
+#include "move.hpp"
 #include <array>
 #include <cassert>
 #include <types.hpp>
@@ -35,6 +36,7 @@ public:
     std::array<Bitboard, NUM_COLOR> pinners;
     StateInfo* previous;
 
+    Square ep_num_to_square() const;
 };
 
 class Position
@@ -53,25 +55,28 @@ public:
 //member functions
 
     Position();
+    Position(const std::string& fen);
     void init();
 
     void fen_parser(const std::string& fen);
 
-
-
     Bitboard generate_between(Square s1, Square s2);
-    Bitboard between_bb(Square s1, Square s2);
+    Bitboard between_bb(Square s1, Square s2) const;
     void init_between();
-    Bitboard line_bb(Square s1, Square s2);
+    Bitboard line_bb(Square s1, Square s2) const;
 
     Bitboard get_piece(Color color, PieceType Piece) const ;
     Square get_king_square(Color color) const ;
+    bool is_check() const;
+    bool is_double_check() const;
+    U8 can_castle(Color color) const;
 
     void set_check_info(Color color);
     void set_check_squares(Color color);
     void set_pins_info(Color color);
     Bitboard set_checkers();
-    bool is_check();
+
+
 };
 
 

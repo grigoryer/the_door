@@ -20,7 +20,7 @@ bool is_allinged(Square s1, Square s2)
 }
 
 
-Bitboard Position::between_bb(Square s1, Square s2)
+Bitboard Position::between_bb(Square s1, Square s2) const
 {
     return between_array[s1][s2];
 }
@@ -58,7 +58,7 @@ Bitboard Position::generate_between(Square s1, Square s2)
 }
 
 
-Bitboard Position::line_bb(Square s1, Square s2)
+Bitboard Position::line_bb(Square s1, Square s2) const
 {
     Bitboard line = between_bb(s1,s2);
     set_bit(line,  s1);
@@ -66,4 +66,9 @@ Bitboard Position::line_bb(Square s1, Square s2)
     return line;
 }
 
-
+Square StateInfo::ep_num_to_square() const 
+{   
+    assert(ep_num >= 0 && ep_num < ep_none);
+    if (ep_num <= ep_white_h) { return a3 + ep_num; }
+    return (a6 + (ep_num - ep_black_a));
+}

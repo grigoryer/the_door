@@ -2,7 +2,7 @@
 #include <string>
 
 const std::string STARTING_FEN = "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1";
-const std::string STARTING1_FEN = "8/8/8/1k6/8/8/8/4K3 w KQkq - 0 1";
+const std::string CUSTOM_FEN = "4k3/p1Pppp1P/1pp2P2/6pp/8/pppP4/PPppppP1/5K1R w - - 0 1";
 
 const std::string empty_board =  "8/8/8/8/8/8/8/8 w - - ";
 const std::string start_position =  "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1 ";

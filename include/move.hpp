@@ -47,6 +47,10 @@ public:
     void set_enpassant(bool enpassant);
     void set_castling(bool castling);
 
+    std::string n_to_sq(Square sq);
+    void print_move();
+
+
     template<MoveType mt>
     static Move create(Square from, Square to, Piece piece)
     {
@@ -66,12 +70,13 @@ public:
 class MoveList
 {
 public:
-    std::array<Move, MAX_MOVES> move_list;
+    std::array<Move, MAX_MOVES> move_list = {};
     int count = 0;
 
     MoveList();
+    void print_all();
     int get_count();
-    void add(Move move);
+    void add(const Move move);
     void clear();
     Move get_move(int index);
 };

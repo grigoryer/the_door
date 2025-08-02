@@ -1,7 +1,8 @@
 #include "move.hpp"
 #include "types.hpp"
 #include <cassert>
-
+#include <string>
+#include <iostream>
 
 static const U8 to_shift        = 6;
 static const U8 piece_shift     = 12;
@@ -10,6 +11,9 @@ static const U8 capture_shift   = 20;
 static const U8 double_shift    = 21;
 static const U8 enpassant_shift = 22;
 static const U8 castling_shift  = 23;
+
+Move::Move() : move(0)
+{  }
 
 Move::Move(Square from, Square to, Piece piece, Piece promoted, 
            bool capture, bool double_push, bool enpassant, bool castling)
@@ -114,8 +118,23 @@ void Move::set_castling(bool castling)
     move = (move & ~CASTLING_MASK) | (static_cast<U32>(castling) << castling_shift); 
 }
 
+void Move::print_move()
+{
+    std::cout << n_to_sq(get_from()) << n_to_sq(get_to()) << ": 1\n";
+}
 
 
+std::string Move::n_to_sq(Square sq)
+{
+    // calculate file (column) and rank (row)
+    U8 file = sq % NUM_FILES;  // 0-7 maps to a-h
+    U8 rank = sq / NUM_RANKS;  // 0-7 maps to 1-8
+    
+    char file_letter = static_cast<char>('a' + file);
+    char rank_number = static_cast<char>('1' + rank);
+    
+    return std::string(1, file_letter) + rank_number;
+}
 
 int MoveList::get_count()
 {
@@ -131,8 +150,19 @@ void MoveList::clear()
     count = 0;
 }
 
+void MoveList::print_all()
+{
+    for(int i = 0; i < count; i++)
+    {
+        move_list[i].print_move();
+    }
+}
+
 
 Move MoveList::get_move(int index)
 {
     return move_list[index];
 }
+
+MoveList::MoveList() 
+{  } 

@@ -20,6 +20,7 @@ const int NUM_EPSQUARES = 17;
 
 const int MAX_MOVES = 256;
 
+const Bitboard FullBB = 0xFFFFFFFFFFFFFFFFULL;
 
 const Bitboard FileABB = 0x0101010101010101ULL;
 const Bitboard FileBBB = FileABB << 1;
