@@ -19,6 +19,7 @@ const int NUM_CASTLING = 16;
 const int NUM_EPSQUARES = 17;
 
 const int MAX_MOVES = 256;
+const int MAX_HISTORY = 512;
 
 const Bitboard FullBB = 0xFFFFFFFFFFFFFFFFULL;
 
@@ -45,6 +46,11 @@ enum PieceType : Piece
     KING, QUEEN, ROOK, BISHOP, KNIGHT, PAWN, NONE
 };
 
+enum PieceList : Piece
+{
+    K = 0, Q = 1, R = 2, B = 3, N = 4, P = 5,
+    k = 6, q = 7, r = 8, b = 9, n = 10, p = 11, no_piece = 12
+};
 enum Colors : Color
 {
     WHITE, BLACK
@@ -106,7 +112,6 @@ enum Castling : U8
 };
 
 
-
 enum Ep_square : Square
 {
     ep_white_a, ep_white_b, ep_white_c, ep_white_d,
@@ -128,6 +133,7 @@ enum MoveType
 
 
 void print_board(Bitboard bitboard);
+
 
 inline bool get_bit(const Bitboard &b, Square sq) 
 {

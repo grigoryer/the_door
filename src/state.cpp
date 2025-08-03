@@ -26,7 +26,6 @@ Bitboard Position::between_bb(Square s1, Square s2) const
 }
 
 
-
 Bitboard Position::generate_between(Square s1, Square s2)
 {
     if(!is_allinged(s1, s2)) { return 0ULL; }
@@ -72,3 +71,26 @@ Square StateInfo::ep_num_to_square() const
     if (ep_num <= ep_white_h) { return a3 + ep_num; }
     return (a6 + (ep_num - ep_black_a));
 }
+
+Square StateInfo::square_to_ep_num(Square sq) 
+{   
+    assert(sq >= 0 && sq < NUM_SQUARES);
+    Square rank = sq / NUM_RANKS;
+    assert(rank == RANK_3 || rank == RANK_6);
+    Square file = sq % NUM_FILES;
+    return file + (rank == RANK_3 ? 0 : NUM_FILES);
+}
+
+
+
+StateInfo::StateInfo() 
+{}
+
+StateInfo::StateInfo(const StateInfo& old) : 
+    castling_rights(old.castling_rights),
+    ep_num(old.ep_num),
+    captured_piece(old.captured_piece),
+    half_move(old.half_move),
+    full_move(old.full_move),
+    hash(old.hash)
+{  }

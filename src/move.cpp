@@ -154,6 +154,8 @@ void MoveList::print_all()
 {
     for(int i = 0; i < count; i++)
     {
+
+        //std::cout << (move_list[i].is_capture() == true ? "IS CAPTURE: " : "NOT CAPTURE: ");
         move_list[i].print_move();
     }
 }

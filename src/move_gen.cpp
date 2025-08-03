@@ -11,14 +11,10 @@ void gen_promo(MoveList& move_list, Square from, Square to, bool capture)
 {
     if constexpr (Type == CAPTURES || Type == NON_EVASIONS)
     {
-
-        std::cout << "promo _ queen\n";
         move_list.add(Move(from, to, PAWN, QUEEN, capture, false, false, true));
     }
     if constexpr (Type == QUIETS || Type == NON_EVASIONS)
     {
-
-        std::cout << "promo r, b, n \n";
         move_list.add(Move(from, to, PAWN, KNIGHT, capture, false, false, true));
         move_list.add(Move(from, to, PAWN, BISHOP, capture, false, false, true));
         move_list.add(Move(from, to, PAWN, ROOK, capture, false, false, true));
@@ -38,7 +34,7 @@ void gen_pawns(const Position& pos, MoveList& move_list, Bitboard target)
 
     Bitboard regular_bb = pos.get_piece(color, PAWN) & ~promo_rank;
     Bitboard promo_bb = pos.get_piece(color, PAWN) & promo_rank;
-
+        
     // single. and double pushes
     if constexpr (Type != CAPTURES)
     {

@@ -1,33 +1,46 @@
 #include "attack.hpp"
 #include "fen_strings.hpp"
 #include "move.hpp"
+#include "move_gen.hpp"
 #include "types.hpp"
 #include "position.hpp"
 #include <iostream>
-#include "move_gen.hpp"
 
 
 
 int main()
 {
-    Position pos(perft_5);
+    Position pos;
     MoveList move_list;
+    AttackTables attack;
 
-    print_board(pos.color_bb[WHITE]);
 
-
-    move_list.clear();
-
-    if(pos.is_check()){
-        generate<EVASIONS>(pos, move_list);
-    }
-    else
+    while(std::cin.get())
     {
-        generate<NON_EVASIONS>(pos, move_list);
+        std::cout << "SIDE TO MOVE: " << (pos.side_to_move == WHITE ? "WHITE" : "BLACK");
+        print_piece_board(pos);
+        move_list.clear();
+    
+        if(pos.is_check())
+        {
+            print_board(pos.state.checkers_bb);
+            print_board(pos.color_bb[pos.side_to_move ^ 1]);
+            generate<EVASIONS>(pos,move_list);
+        }
+        else 
+        {
+            generate<NON_EVASIONS>(pos,move_list);
+        }
+
+        std::cout << "MOVE COUNT: " << move_list.count << std::endl;
+        move_list.print_all();
+
+        print_piece_board(pos);
+
+        pos.make_move(move_list.move_list[0]);
+
     }
 
-    std::cout <<  "AMOUNT OF MOVES: " << move_list.count << std::endl;
-    move_list.print_all();
 
     return 0;
 }

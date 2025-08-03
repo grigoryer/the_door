@@ -58,7 +58,7 @@ public:
         {
             case QUIET       : return Move(from, to, piece, NONE, false, false, false, false);
             case(CAPTURE)    : return Move(from, to, piece, NONE, true, false, false, false);
-            case(ENPASSANT)  : return Move(from, to, piece, NONE, true, false, true, false);
+            case(ENPASSANT)  : return Move(from, to, piece, NONE, false, false, true, false);
             case(DOUBLE)     : return Move(from, to, piece, NONE, false, true, false, false);
             case(CASTLE)     : return Move(from, to, piece, NONE, false, false, false, true);
         }

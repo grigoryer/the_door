@@ -1,11 +1,10 @@
 #include "position.hpp"
+#include "fen_strings.hpp"
+#include <iostream>
+#include "types.hpp"
 #include <array>
 #include <cassert>
 #include <sstream>
-#include "attack.hpp"
-#include "fen_strings.hpp"
-#include "types.hpp"
-#include <iostream>
 
 
 
@@ -145,7 +144,11 @@ void Position::init()
     occupancy = color_bb[WHITE] | color_bb[BLACK];
 
     set_check_info(side_to_move);
+    init_piece_board();
+    init_hash();
 }
+
+
 
 void Position::init_between()
 {
@@ -158,6 +161,60 @@ void Position::init_between()
     }
 }
 
+
+void Position::init_piece_board()
+{
+    piece_board.fill(no_piece);
+    Color us = side_to_move;
+    for (Piece piece = KING; piece <= PAWN; piece++)
+    {
+        Bitboard white_bb = get_piece(us, piece);
+        while (white_bb != 0)
+        {
+            Square square = lsb(white_bb);
+            piece_board[square] = piece; // K–P
+            pop_bit(white_bb, square);
+        }
+
+        Bitboard black_bb = get_piece(BLACK, piece);
+        while (black_bb != 0)
+        {
+            Square square = lsb(black_bb);
+            piece_board[square] = (piece + NUM_PIECES); // k–p
+            pop_bit(black_bb, square);
+        }
+    }
+
+}
+
+
+Key Position::init_hash() 
+{
+    Key key = 0;
+
+    for (Color color = 0; color < NUM_COLOR; color++) 
+    {
+        for (int piece = KING; piece <= PAWN; piece++) 
+        {
+            PieceType pt = static_cast<PieceType>(piece);
+            Bitboard bitboard = get_piece(color, piece);
+            
+            while (bitboard != 0) 
+            {
+                int square = lsb(bitboard);
+                key ^= zobrist.piece(color, piece, square);
+                pop_bit(bitboard,square);
+            }
+        }
+    }
+
+    key ^= zobrist.castling(state.castling_rights);
+    key ^= zobrist.color(side_to_move);
+    key ^= zobrist.en_passant(state.ep_num);
+
+    return key;    
+}
+
 Square Position::get_king_square(Color color) const
 {
     assert(get_piece(color, KING) != 0);
@@ -165,7 +222,7 @@ Square Position::get_king_square(Color color) const
 }
 
 
-Bitboard Position::get_piece(Color color, PieceType piece) const
+Bitboard Position::get_piece(Color color, Piece piece) const
 {
     return piece_bb[piece] & color_bb[color];
 }
@@ -174,19 +231,19 @@ void Position::set_check_squares(Color color)
 {   
     Square ksq = get_king_square(color);
 
-    state.check_squares[color][PAWN]   = AttackTables::pawn_attacks[color][ksq];
-    state.check_squares[color][KNIGHT] = attacks_bb<KNIGHT>(ksq, occupancy);
-    state.check_squares[color][BISHOP] = attacks_bb<BISHOP>(ksq, occupancy);
-    state.check_squares[color][ROOK]   = attacks_bb<ROOK>(ksq, occupancy);
-    state.check_squares[color][QUEEN]  = attacks_bb<QUEEN>(ksq, occupancy);
+    state.check_squares[PAWN]   = AttackTables::pawn_attacks[color][ksq];
+    state.check_squares[KNIGHT] = attacks_bb<KNIGHT>(ksq, occupancy);
+    state.check_squares[BISHOP] = attacks_bb<BISHOP>(ksq, occupancy);
+    state.check_squares[ROOK]   = attacks_bb<ROOK>(ksq, occupancy);
+    state.check_squares[QUEEN]  = attacks_bb<QUEEN>(ksq, occupancy);
 }
 
 
 void Position::set_pins_info(Color color)
 {
     Color enemy = color ^ 1;
-    state.pinners[enemy] = 0ULL;
-    state.blockers_for_king[color] = 0ULL;
+    state.pinners = 0ULL;
+    state.blockers_for_king = 0ULL;
 
     Square ksq = get_king_square(color);
     Bitboard snipers = get_piece(enemy, QUEEN) | get_piece(enemy, ROOK) | get_piece(enemy, BISHOP);
@@ -198,8 +255,8 @@ void Position::set_pins_info(Color color)
         
         if(bit_count(bb) == 1)
         {
-            state.blockers_for_king[color] |= bb;
-            state.pinners[enemy] |= (1ULL << sniper);
+            state.blockers_for_king |= bb;
+            state.pinners |= (1ULL << sniper);
         }
         
         pop_lsb(snipers);
@@ -230,13 +287,13 @@ Bitboard Position::set_checkers()
     state.checkers_bb = 0ULL;
     Color us = side_to_move;
     Color enemy = side_to_move ^ 1;
-
     for(Piece piece = KING; piece <= PAWN; piece++ )
     {
-        Bitboard attacker = get_piece(enemy, (PieceType)piece);
-        if((state.check_squares[us][piece] & attacker) != 0)
+        Bitboard attacker = get_piece(enemy, piece);
+
+        if((state.check_squares[piece] & attacker) != 0)
         {
-            state.checkers_bb |= state.check_squares[us][piece] & attacker;
+            state.checkers_bb |= state.check_squares[piece] & attacker;
         }
     }
     return state.checkers_bb;
@@ -261,4 +318,20 @@ U8 Position::can_castle(Color color) const
         { output |= BQ; }
         return output;
     }
+
+    return NO_CASTLING;
+}
+
+
+
+Piece Position::list_to_type(U8 sq)
+{
+    Piece encoded_piece = piece_board[sq]; 
+    return (encoded_piece < NUM_PIECES) ? (encoded_piece) : (encoded_piece - NUM_PIECES);
+}
+
+
+Piece Position::type_to_list(Piece piece, Color color)
+{
+    return piece + (color == WHITE ? 0 : NUM_PIECES);
 }
