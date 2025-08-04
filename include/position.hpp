@@ -61,7 +61,7 @@ public:
 
     int state_index = 0;
     std::array<StateInfo, MAX_HISTORY> state_history;
-    StateInfo& state = state_history[state_index];
+    StateInfo* state = &state_history[state_index];
 
     std::array<std::array<Bitboard, NUM_SQUARES>, NUM_SQUARES> between_array= {0ULL};
 
@@ -71,25 +71,29 @@ public:
     void init();
     void init_piece_board();
     Key init_hash();
+    void init_between();
     void fen_parser(const std::string& fen);
 
-    //between array
+    //between array in state.cpp
     Bitboard generate_between(Square s1, Square s2);
     Bitboard between_bb(Square s1, Square s2) const;
-    void init_between();
     Bitboard line_bb(Square s1, Square s2) const;
 
     //utilities
+    StateInfo& get_state();
     Bitboard get_piece(Color color, Piece piece) const ;
     Square get_king_square(Color color) const ;
     bool is_check() const;
     bool is_double_check() const;
     U8 can_castle(Color color) const;
-    Piece list_to_type(U8 sq);
+    Piece list_to_type(Square sq);
     Piece type_to_list(Piece piece, Color color);
     void update_occupancy();
+    bool is_square_attacked(Square sq, Color color);
+
 
     //state / pinners and checkers
+    bool is_legal(Move m);
     void set_state();
     void set_check_info(Color color);
     void set_check_squares(Color color);
@@ -97,7 +101,11 @@ public:
     Bitboard set_checkers();
 
     //do move
-    void make_move(Move& move);
+    void make_move(Move move);
+
+    void prepare_state(Move move);
+    void handle_clock(Piece piece);
+    void handle_specials(Move& move, Color us, Color enemy, Square from, Square to, Piece* piece);
     void move_piece(Color color, Piece piece, Square from, Square to);
     void remove_piece(Color color, Piece piece, Square sq);
     void put_piece(Color color, Piece piece, Square sq);
@@ -106,6 +114,13 @@ public:
     void set_epsquare(Square sq);
     void clear_epsquare();
     void castling_support(Color color, Square king_from, Square king_to);
+    void castling_permissions_support(Color color, Square from, Piece piece);
+
+
+    //unmake move 
+    void unmake_move();
+    void restore_castling(Move move, Color us);
+    void restore_enpassant(Move move);
 
 };
 
@@ -113,4 +128,4 @@ public:
 
 
 void print_piece_board(Position& pos);
-void print_state_info(const StateInfo& state);
+void print_state_info(const StateInfo* state);

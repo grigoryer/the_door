@@ -3,7 +3,7 @@
 #include "move.hpp"
 #include "position.hpp"
 #include "types.hpp"
-
+#include <iostream>
 
 
 template<GenType Type>
@@ -11,13 +11,13 @@ void gen_promo(MoveList& move_list, Square from, Square to, bool capture)
 {
     if constexpr (Type == CAPTURES || Type == NON_EVASIONS)
     {
-        move_list.add(Move(from, to, PAWN, QUEEN, capture, false, false, true));
+        move_list.add(Move(from, to, PAWN, QUEEN, capture, false, false, false));
     }
     if constexpr (Type == QUIETS || Type == NON_EVASIONS)
     {
-        move_list.add(Move(from, to, PAWN, KNIGHT, capture, false, false, true));
-        move_list.add(Move(from, to, PAWN, BISHOP, capture, false, false, true));
-        move_list.add(Move(from, to, PAWN, ROOK, capture, false, false, true));
+        move_list.add(Move(from, to, PAWN, KNIGHT, capture, false, false, false));
+        move_list.add(Move(from, to, PAWN, BISHOP, capture, false, false, false));
+        move_list.add(Move(from, to, PAWN, ROOK, capture, false, false,false));
     }
 }
 
@@ -84,9 +84,9 @@ void gen_pawns(const Position& pos, MoveList& move_list, Bitboard target)
         }
 
         //en passant
-        if(pos.state.ep_num != ep_none)
+        if(pos.state->ep_num != ep_none)
         {
-            Square ep = pos.state.ep_num_to_square();
+            Square ep = pos.state->ep_num_to_square();
             Bitboard ep_attacks = AttackTables::pawn_attacks[color ^ 1][ep] & regular_bb;
 
             while(ep_attacks)
@@ -165,7 +165,7 @@ void generate_all(const Position& pos, MoveList& move_list)
 
         if (Type == EVASIONS) 
         { 
-            target = pos.line_bb(ksq, lsb(pos.state.checkers_bb)); 
+            target = pos.line_bb(ksq, lsb(pos.state->checkers_bb)); 
         }
 
         target &= ~pos.color_bb[us];
@@ -184,7 +184,8 @@ void generate_all(const Position& pos, MoveList& move_list)
 
     while(king_attacks)
     {
-        move_list.add(Move(ksq, pop_lsb(king_attacks), KING, NONE));
+        Square to = pop_lsb(king_attacks);
+        move_list.add(Move(ksq, to, KING, NONE, get_bit(pos.color_bb[enemy], to)));
     }
 
     if constexpr (Type != EVASIONS)

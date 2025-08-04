@@ -1,3 +1,5 @@
+#include "attack.hpp"
+#include "move.hpp"
 #include "position.hpp"
 #include "types.hpp"
 
@@ -94,3 +96,5 @@ StateInfo::StateInfo(const StateInfo& old) :
     full_move(old.full_move),
     hash(old.hash)
 {  }
+
+

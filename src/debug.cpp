@@ -47,14 +47,14 @@ void print_piece_board(Position& pos)
     std::cout << "\n   a b c d e f g h\n";
 }
 
-void print_state_info(const StateInfo& state) 
+void print_state_info(const StateInfo* state) 
 {
     std::cout << "=== State Information ===" << std::endl;
-    std::cout << "Castling Rights: " << static_cast<int>(state.castling_rights) << std::endl;
-    std::cout << "En Passant Square: " << static_cast<int>(state.ep_num) << std::endl;
-    std::cout << "Half Move Clock: " << state.half_move << std::endl;
-    std::cout << "Full Move Number: " << state.full_move << std::endl;
-    std::cout << "Captured Piece: " << static_cast<int>(state.captured_piece) << std::endl;
-    std::cout << "Hash Key: " << state.hash << std::endl;
+    std::cout << "Castling Rights: " << static_cast<int>(state->castling_rights) << std::endl;
+    std::cout << "En Passant Square: " << static_cast<int>(state->ep_num) << std::endl;
+    std::cout << "Half Move Clock: " << state->half_move << std::endl;
+    std::cout << "Full Move Number: " << state->full_move << std::endl;
+    std::cout << "Captured Piece: " << static_cast<int>(state->captured_piece) << std::endl;
+    std::cout << "Hash Key: " << state->hash << std::endl;
     std::cout << "=========================" << std::endl;
 }

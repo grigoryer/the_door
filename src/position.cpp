@@ -80,17 +80,17 @@ void Position::fen_parser(const std::string& fen)
 
     side_to_move = (color == "w" ) ?  WHITE : BLACK;
 
-    state.castling_rights = NO_CASTLING;
+    state->castling_rights = NO_CASTLING;
     
     for(int i = 0; i < castling.length(); i++)
     {
         char ch = castling[i];
         switch(ch) 
         {
-            case 'K': state.castling_rights |= WK; break;
-            case 'Q': state.castling_rights |= WQ; break;
-            case 'k': state.castling_rights |= BK; break;
-            case 'q': state.castling_rights |= BQ; break;
+            case 'K': state->castling_rights |= WK; break;
+            case 'Q': state->castling_rights |= WQ; break;
+            case 'k': state->castling_rights |= BK; break;
+            case 'q': state->castling_rights |= BQ; break;
             case '-': break;
         }
     }
@@ -101,25 +101,25 @@ void Position::fen_parser(const std::string& fen)
         int file = en_passant[0] - 'a';
         int rank = en_passant[1] - '0';
 
-        if(rank == RANK_5) 
+        if(rank == RANK_4) 
         {
-            state.ep_num = file; // 0-7
+            state->ep_num = static_cast<U8>(file); // 0-7
         }
-        else if(rank == RANK_2) 
+        else if(rank == RANK_7) 
         {
-            state.ep_num = NUM_FILES + file; 
+            state->ep_num = static_cast<U8>(NUM_FILES + file); 
         }
     }
     else
     {
-        state.ep_num = ep_none; //none value
+        state->ep_num = ep_none; //none value
     }
 
-    if(half_move == "-" || parts[fen_half_move] == ""){ state.half_move = 0; }
-    else { state.half_move = std::stoi(half_move); }
+    if(half_move == "-" || parts[fen_half_move] == ""){ state->half_move = 0; }
+    else { state->half_move = std::stoi(half_move); }
 
-    if(move == "-" || parts[fen_full_move] == "" ){ state.full_move = 0; }
-    else{ state.full_move = std::stoi(move); }
+    if(move == "-" || parts[fen_full_move] == "" ){ state->full_move = 0; }
+    else{ state->full_move = std::stoi(move); }
 }
 
 
@@ -208,9 +208,9 @@ Key Position::init_hash()
         }
     }
 
-    key ^= zobrist.castling(state.castling_rights);
+    key ^= zobrist.castling(state->castling_rights);
     key ^= zobrist.color(side_to_move);
-    key ^= zobrist.en_passant(state.ep_num);
+    key ^= zobrist.en_passant(state->ep_num);
 
     return key;    
 }
@@ -230,20 +230,31 @@ Bitboard Position::get_piece(Color color, Piece piece) const
 void Position::set_check_squares(Color color)
 {   
     Square ksq = get_king_square(color);
-
-    state.check_squares[PAWN]   = AttackTables::pawn_attacks[color][ksq];
-    state.check_squares[KNIGHT] = attacks_bb<KNIGHT>(ksq, occupancy);
-    state.check_squares[BISHOP] = attacks_bb<BISHOP>(ksq, occupancy);
-    state.check_squares[ROOK]   = attacks_bb<ROOK>(ksq, occupancy);
-    state.check_squares[QUEEN]  = attacks_bb<QUEEN>(ksq, occupancy);
+    
+    state->check_squares[PAWN]   = AttackTables::pawn_attacks[color][ksq];
+    state->check_squares[KNIGHT] = attacks_bb<KNIGHT>(ksq, occupancy);
+    state->check_squares[BISHOP] = attacks_bb<BISHOP>(ksq, occupancy);
+    state->check_squares[ROOK]   = attacks_bb<ROOK>(ksq, occupancy);
+    state->check_squares[QUEEN]  = attacks_bb<QUEEN>(ksq, occupancy);
 }
 
+bool Position::is_square_attacked(Square sq, Color color)
+{
+    
+    if (get_piece(color ^ 1, PAWN)   & AttackTables::pawn_attacks[color][sq]) { return true; }
+    if (get_piece(color ^ 1, KNIGHT) & attacks_bb<KNIGHT>(sq, occupancy))     { return true; }
+    if (get_piece(color ^ 1, BISHOP) & attacks_bb<BISHOP>(sq, occupancy))     { return true; }
+    if (get_piece(color ^ 1, ROOK)   & attacks_bb<ROOK>(sq, occupancy))       { return true; }
+    if (get_piece(color ^ 1, QUEEN)  & attacks_bb<QUEEN>(sq, occupancy))      { return true; }
+
+    return false;
+}
 
 void Position::set_pins_info(Color color)
 {
     Color enemy = color ^ 1;
-    state.pinners = 0ULL;
-    state.blockers_for_king = 0ULL;
+    state->pinners = 0ULL;
+    state->blockers_for_king = 0ULL;
 
     Square ksq = get_king_square(color);
     Bitboard snipers = get_piece(enemy, QUEEN) | get_piece(enemy, ROOK) | get_piece(enemy, BISHOP);
@@ -255,8 +266,8 @@ void Position::set_pins_info(Color color)
         
         if(bit_count(bb) == 1)
         {
-            state.blockers_for_king |= bb;
-            state.pinners |= (1ULL << sniper);
+            state->blockers_for_king |= bb;
+            state->pinners |= (1ULL << sniper);
         }
         
         pop_lsb(snipers);
@@ -273,30 +284,30 @@ void Position::set_check_info(Color color)
 
 bool Position::is_check() const
 {
-    return bit_count(state.checkers_bb) != 0;
+    return bit_count(state->checkers_bb) != 0;
 }
 
 
 bool Position::is_double_check() const
 {
-    return bit_count(state.checkers_bb) > 1;
+    return bit_count(state->checkers_bb) > 1;
 }
 
 Bitboard Position::set_checkers()
 {  
-    state.checkers_bb = 0ULL;
+    state->checkers_bb = 0ULL;
     Color us = side_to_move;
     Color enemy = side_to_move ^ 1;
     for(Piece piece = KING; piece <= PAWN; piece++ )
     {
         Bitboard attacker = get_piece(enemy, piece);
 
-        if((state.check_squares[piece] & attacker) != 0)
+        if((state->check_squares[piece] & attacker) != 0)
         {
-            state.checkers_bb |= state.check_squares[piece] & attacker;
+            state->checkers_bb |= state->check_squares[piece] & attacker;
         }
     }
-    return state.checkers_bb;
+    return state->checkers_bb;
 }
 
 U8 Position::can_castle(Color color) const
@@ -304,17 +315,17 @@ U8 Position::can_castle(Color color) const
     U8 output = NO_CASTLING;
     if(color == WHITE)
     {
-        if((WK & state.castling_rights) == WK && !get_bit(occupancy, f1) && !get_bit(occupancy, g1))
+        if((WK & state->castling_rights) == WK && !get_bit(occupancy, f1) && !get_bit(occupancy, g1))
         { output |= WK; }
-        if ((WQ & state.castling_rights) == WQ && !get_bit(occupancy, b1) && !get_bit(occupancy, c1) && !get_bit(occupancy, d1))
+        if ((WQ & state->castling_rights) == WQ && !get_bit(occupancy, b1) && !get_bit(occupancy, c1) && !get_bit(occupancy, d1))
         { output |= WQ; }
         return output;
     }
     if(color == BLACK)
     {
-        if((BK & state.castling_rights) == BK && !get_bit(occupancy, f8) && !get_bit(occupancy, g8))
+        if((BK & state->castling_rights) == BK && !get_bit(occupancy, f8) && !get_bit(occupancy, g8))
         { output |= BK; }
-        if ((BQ & state.castling_rights) == BQ && !get_bit(occupancy, b8) && !get_bit(occupancy, c8) && !get_bit(occupancy, d8))
+        if ((BQ & state->castling_rights) == BQ && !get_bit(occupancy, b8) && !get_bit(occupancy, c8) && !get_bit(occupancy, d8))
         { output |= BQ; }
         return output;
     }
@@ -322,9 +333,12 @@ U8 Position::can_castle(Color color) const
     return NO_CASTLING;
 }
 
+StateInfo& Position::get_state()
+{
+    return state_history[state_index];
+}
 
-
-Piece Position::list_to_type(U8 sq)
+Piece Position::list_to_type(Square sq)
 {
     Piece encoded_piece = piece_board[sq]; 
     return (encoded_piece < NUM_PIECES) ? (encoded_piece) : (encoded_piece - NUM_PIECES);
@@ -334,4 +348,55 @@ Piece Position::list_to_type(U8 sq)
 Piece Position::type_to_list(Piece piece, Color color)
 {
     return piece + (color == WHITE ? 0 : NUM_PIECES);
+}
+
+
+bool Position::is_legal(Move m)
+{
+    Color us = side_to_move;
+    Color enemy = us ^ 1;
+    Square ksq = get_king_square(us);
+    Square from = m.get_from();
+    Square to = m.get_to();
+
+
+    if(m.is_enpassant())
+    {
+        
+        Bitboard occ = occupancy;
+        U8 captured_pawn_sq = state->ep_num_to_square() + (us == WHITE ? NORTH : SOUTH);
+
+        occ ^= (1ULL << from);              // remove moving pawn
+        occ ^= (1ULL << captured_pawn_sq);  // remove captured pawn  
+        occ |= (1ULL << to);                // add moving pawn to destination
+
+        const Bitboard bishop_attackers = get_piece(enemy, BISHOP) | get_piece(enemy, QUEEN);
+        const Bitboard rook_attackers = get_piece(enemy, ROOK) | get_piece(enemy, BISHOP);
+
+        return (!(AttackTables::get_bishop_attacks(ksq, occ) & bishop_attackers) 
+                && !(AttackTables::get_rook_attacks(ksq, occ) & rook_attackers));
+    }
+
+    if(m.is_castling())
+    {
+        Direction shift = (to > from ? EAST : WEST);
+        Square cur = from;
+
+        while(cur != to)
+        {
+            cur += shift; 
+            if(is_square_attacked(cur, us)) { return false; }
+        }
+    }
+
+    if(m.get_piece() == KING)
+    {
+
+        Bitboard occ = occupancy;
+        occ ^= (1ULL << from); 
+        return (!is_square_attacked(to,  us));
+    }
+
+    return !(state->blockers_for_king & from) || line_bb(from, to) & get_piece(us, KING);
+
 }
