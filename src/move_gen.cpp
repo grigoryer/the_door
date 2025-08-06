@@ -207,7 +207,7 @@ void generate_all(const Position& pos, MoveList& move_list)
 
 
 template<GenType Type>
-void generate(const Position& pos, MoveList& move_list)
+void generate(Position& pos, MoveList& move_list)
 {
     Color us = pos.side_to_move;
 
@@ -222,8 +222,24 @@ void generate(const Position& pos, MoveList& move_list)
 
 }
 
-template void generate<QUIETS>(const Position& pos, MoveList& move_list);
-template void generate<CAPTURES>(const Position& pos, MoveList& move_list);
-template void generate<NON_EVASIONS>(const Position& pos, MoveList& move_list);
-template void generate<EVASIONS>(const Position& pos, MoveList& move_list);
-template void generate<LEGAL>(const Position& pos, MoveList& move_list);
+template void generate<QUIETS>(Position& pos, MoveList& move_list);
+template void generate<CAPTURES>(Position& pos, MoveList& move_list);
+template void generate<NON_EVASIONS>(Position& pos, MoveList& move_list);
+template void generate<EVASIONS>(Position& pos, MoveList& move_list);
+
+template<>
+void generate<LEGAL>(Position& pos, MoveList& move_list)
+{
+    move_list.clear();
+    MoveList pseudo;
+    pos.is_check() == true ? generate<EVASIONS>(pos, pseudo) : generate<NON_EVASIONS>(pos, pseudo);
+    for(int i = 0; i < pseudo.count; i++)
+    {
+        if(pos.is_legal(pseudo.move_list[i]))
+        {
+            move_list.add(pseudo.move_list[i]);
+        }
+    }
+}
+
+

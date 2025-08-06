@@ -1,6 +1,7 @@
 #include "position.hpp"
 #include "fen_strings.hpp"
 #include <iostream>
+#include "move.hpp"
 #include "types.hpp"
 #include <array>
 #include <cassert>
@@ -156,7 +157,8 @@ void Position::init_between()
     {
         for(int s2 = 0; s2 < NUM_SQUARES; s2++)
         {
-            between_array[s1][s2] = generate_between(s1,s2);
+            between_array[s1][s2] = generate_between(s1, s2);
+            through_array[s1][s2] = generate_through(s1, s2);
         }
     }
 }
@@ -165,10 +167,9 @@ void Position::init_between()
 void Position::init_piece_board()
 {
     piece_board.fill(no_piece);
-    Color us = side_to_move;
     for (Piece piece = KING; piece <= PAWN; piece++)
     {
-        Bitboard white_bb = get_piece(us, piece);
+        Bitboard white_bb = get_piece(WHITE, piece);
         while (white_bb != 0)
         {
             Square square = lsb(white_bb);
@@ -246,6 +247,20 @@ bool Position::is_square_attacked(Square sq, Color color)
     if (get_piece(color ^ 1, BISHOP) & attacks_bb<BISHOP>(sq, occupancy))     { return true; }
     if (get_piece(color ^ 1, ROOK)   & attacks_bb<ROOK>(sq, occupancy))       { return true; }
     if (get_piece(color ^ 1, QUEEN)  & attacks_bb<QUEEN>(sq, occupancy))      { return true; }
+    if (get_piece(color ^ 1, KING)  & attacks_bb<KING>(sq, occupancy))        { return true; }
+
+    return false;
+}
+
+bool Position::is_square_attacked(Square sq, Color color, Bitboard occ)
+{
+    
+    if (get_piece(color ^ 1, PAWN)   & AttackTables::pawn_attacks[color][sq])      { return true; }
+    if (get_piece(color ^ 1, KNIGHT) & attacks_bb<KNIGHT>(sq, occ))     { return true; }
+    if (get_piece(color ^ 1, BISHOP) & attacks_bb<BISHOP>(sq, occ))     { return true; }
+    if (get_piece(color ^ 1, ROOK)   & attacks_bb<ROOK>(sq, occ))       { return true; }
+    if (get_piece(color ^ 1, QUEEN)  & attacks_bb<QUEEN>(sq, occ))      { return true; }
+    if (get_piece(color ^ 1, KING)  & attacks_bb<KING>(sq, occ))        { return true; }
 
     return false;
 }
@@ -394,9 +409,16 @@ bool Position::is_legal(Move m)
 
         Bitboard occ = occupancy;
         occ ^= (1ULL << from); 
-        return (!is_square_attacked(to,  us));
+        return (!is_square_attacked(to,  us, occ));
     }
 
-    return !(state->blockers_for_king & from) || line_bb(from, to) & get_piece(us, KING);
+    print_board(through_bb(from,  to) & get_piece(us,  KING));
+    return !(state->blockers_for_king & (1ULL << from) || 
+            through_bb(from,  to) & get_piece(us,  KING));
+}
+
+
+bool Position::is_mate(MoveList *ml)
+{
 
 }

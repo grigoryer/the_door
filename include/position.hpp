@@ -63,7 +63,9 @@ public:
     std::array<StateInfo, MAX_HISTORY> state_history;
     StateInfo* state = &state_history[state_index];
 
-    std::array<std::array<Bitboard, NUM_SQUARES>, NUM_SQUARES> between_array= {0ULL};
+    std::array<std::array<Bitboard, NUM_SQUARES>, NUM_SQUARES> between_array = {0ULL};
+    std::array<std::array<Bitboard, NUM_SQUARES>, NUM_SQUARES> through_array = {0ULL};
+
 
 //member functions
     Position();
@@ -73,11 +75,14 @@ public:
     Key init_hash();
     void init_between();
     void fen_parser(const std::string& fen);
+    int perft(int depth);
 
     //between array in state.cpp
     Bitboard generate_between(Square s1, Square s2);
     Bitboard between_bb(Square s1, Square s2) const;
     Bitboard line_bb(Square s1, Square s2) const;
+    Bitboard generate_through(Square s1, Square s2);
+    Bitboard through_bb(Square s1, Square s2) const;
 
     //utilities
     StateInfo& get_state();
@@ -85,11 +90,15 @@ public:
     Square get_king_square(Color color) const ;
     bool is_check() const;
     bool is_double_check() const;
+    bool is_mate(MoveList *ml);
+    bool is_stalemate(MoveList *ml);
     U8 can_castle(Color color) const;
     Piece list_to_type(Square sq);
     Piece type_to_list(Piece piece, Color color);
     void update_occupancy();
     bool is_square_attacked(Square sq, Color color);
+    bool is_square_attacked(Square sq, Color color, Bitboard occ);
+
 
 
     //state / pinners and checkers
@@ -102,7 +111,6 @@ public:
 
     //do move
     void make_move(Move move);
-
     void prepare_state(Move move);
     void handle_clock(Piece piece);
     void handle_specials(Move& move, Color us, Color enemy, Square from, Square to, Piece* piece);
@@ -116,7 +124,6 @@ public:
     void castling_support(Color color, Square king_from, Square king_to);
     void castling_permissions_support(Color color, Square from, Piece piece);
 
-
     //unmake move 
     void unmake_move();
     void restore_castling(Move move, Color us);
@@ -128,4 +135,4 @@ public:
 
 
 void print_piece_board(Position& pos);
-void print_state_info(const StateInfo* state);
+void print_state_info(const Position* pos);

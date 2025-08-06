@@ -1,3 +1,4 @@
+#include "move_gen.hpp"
 #include "types.hpp"
 #include "position.hpp"
 #include <iostream>
@@ -47,14 +48,36 @@ void print_piece_board(Position& pos)
     std::cout << "\n   a b c d e f g h\n";
 }
 
-void print_state_info(const StateInfo* state) 
+void print_state_info(const Position* pos) 
 {
     std::cout << "=== State Information ===" << std::endl;
-    std::cout << "Castling Rights: " << static_cast<int>(state->castling_rights) << std::endl;
-    std::cout << "En Passant Square: " << static_cast<int>(state->ep_num) << std::endl;
-    std::cout << "Half Move Clock: " << state->half_move << std::endl;
-    std::cout << "Full Move Number: " << state->full_move << std::endl;
-    std::cout << "Captured Piece: " << static_cast<int>(state->captured_piece) << std::endl;
-    std::cout << "Hash Key: " << state->hash << std::endl;
+    std::cout << "Castling Rights: " << static_cast<int>(pos->state->castling_rights) << std::endl;
+    std::cout << "En Passant Square: " << static_cast<int>(pos->state->ep_num) << std::endl;
+    std::cout << "Half Move Clock: " << pos->state->half_move << std::endl;
+    std::cout << "Full Move Number: " << pos->state->full_move << std::endl;
+    std::cout << "Hash Key: " << pos->state->hash << std::endl;
     std::cout << "=========================" << std::endl;
+}
+
+
+
+int Position::perft(int depth)
+{
+    if(int depth = 0) { return 1; }
+    MoveList move_list;
+    generate<LEGAL>(*this , move_list);
+
+    int nodes = 0;
+
+    for(int i = 0; i < move_list.count; i++)
+    {
+        Move move = move_list.move_list[i];
+
+        make_move(move);
+        nodes += perft(depth - 1);
+        //unmake_move();
+
+    }
+
+    return nodes;
 }

@@ -17,9 +17,9 @@ void Position::make_move(Move move)
     handle_clock(piece);
     handle_specials(move, us, enemy, from, to, &piece);
     move_piece(us, piece, from, to);
-
     swap_sides();
-    set_check_info(side_to_move);
+
+    set_check_info(enemy);
 }
 
 void Position::prepare_state(Move move)
@@ -48,7 +48,7 @@ void Position::handle_specials(Move& move, Color us, Color enemy, Square from, S
     { 
         state->half_move = 0;
         state_history[state_index - 1].captured_piece = list_to_type(to);
-        remove_piece(enemy, state->captured_piece,  to); 
+        remove_piece(enemy, state_history[state_index - 1].captured_piece,  to); 
 
     }
     
@@ -58,7 +58,12 @@ void Position::handle_specials(Move& move, Color us, Color enemy, Square from, S
 
     if(state->castling_rights != 0 && (*piece == ROOK || *piece == KING)) { castling_permissions_support(us, from, *piece); }
     
-    if(move.is_promoted()) { *piece = move.get_promoted(); } 
+    if(move.is_promoted()) 
+    {
+        remove_piece(us, PAWN, from);
+        *piece = move.get_promoted(); 
+    } 
+    
 }
 
 void Position::castling_permissions_support(Color color, Square from, Piece piece)
@@ -124,7 +129,7 @@ void Position::put_piece(Color color, Piece piece, Square sq)
     set_bit(piece_bb[piece], sq);
     set_bit(color_bb[color], sq);
     set_bit(occupancy, sq);
-    piece_board[sq] = piece + (color == WHITE ? 0 : NUM_PIECES);; 
+    piece_board[sq] = piece + (color == WHITE ? 0 : NUM_PIECES);
     state->hash ^= zobrist.piece(color, piece, sq);
 }
 
@@ -154,73 +159,4 @@ void Position::clear_epsquare()
     state->hash ^= zobrist.en_passant(state->ep_num);
     state->ep_num = ep_none;
     state->hash ^= zobrist.en_passant(state->ep_num);
-}
-
-void Position::unmake_move()
-{
-    assert(state_index > 0);
-    swap_sides();  
-
-    Key hash = state->hash;
-    state_index--;
-    state = &state_history[state_index];
-
-    Move move = state->move;
-    const Color us = side_to_move;  
-    const Square from = move.get_from();
-    const Square to = move.get_to();
-    Piece piece = move.get_piece();
-
-    remove_piece(us, piece, to);
-    put_piece(us, piece, from);
-
-    // Handle special moves
-    if (move.is_castling())
-    {
-        restore_castling(move, us);
-    }
-    if (move.is_capture())
-    {
-        std::cout << (int)state->captured_piece << "\n";
-        put_piece(side_to_move ^ 1, state->captured_piece, to);
-    }
-    if (move.is_enpassant())
-    {
-        restore_enpassant(move);
-    }
-
-    state->hash = hash;
-}
-
-
-void Position::restore_enpassant(Move move)
-{
-    Color enemy = side_to_move ^ 1;
-    Square ep_square = state->ep_num_to_square();
-    const Square captured_square = ep_square + (enemy == WHITE ? NORTH : SOUTH);
-    put_piece(enemy, PAWN, captured_square);
-}
-
-void Position::restore_castling(Move move, Color us)
-{
-    const U8 king_from = move.get_from();
-    const U8 king_to = move.get_to();
-    
-    // Determine rook movement to reverse
-    const bool is_kingside = (king_to > king_from);
-    U8 rook_from = 0;
-    U8 rook_to = 0;
-    
-    if (us == WHITE) 
-    {
-        rook_from = is_kingside ? h1 : a1;
-        rook_to = is_kingside ? f1 : d1;
-    } 
-    else 
-    {
-        rook_from = is_kingside ? h8 : a8;
-        rook_to = is_kingside ? f8 : d8;
-    }
-    // Move rook back
-    move_piece(us, ROOK, rook_to, rook_from);
 }
