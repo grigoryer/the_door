@@ -277,7 +277,7 @@ void Position::set_pins_info(Color color)
     while(snipers)
     {
         Square sniper = lsb(snipers);
-        Bitboard bb = between_bb(sniper, ksq) & color_bb[color];
+        Bitboard bb = between_bb(sniper, ksq) & occupancy;
         
         if(bit_count(bb) == 1)
         {
@@ -379,7 +379,7 @@ bool Position::is_legal(Move m)
     {
         
         Bitboard occ = occupancy;
-        U8 captured_pawn_sq = state->ep_num_to_square() + (us == WHITE ? NORTH : SOUTH);
+        Square captured_pawn_sq = state->ep_num_to_square() + (us == WHITE ? SOUTH : NORTH);
 
         occ ^= (1ULL << from);              // remove moving pawn
         occ ^= (1ULL << captured_pawn_sq);  // remove captured pawn  
@@ -406,19 +406,49 @@ bool Position::is_legal(Move m)
 
     if(m.get_piece() == KING)
     {
-
         Bitboard occ = occupancy;
         occ ^= (1ULL << from); 
         return (!is_square_attacked(to,  us, occ));
     }
 
-    print_board(through_bb(from,  to) & get_piece(us,  KING));
-    return !(state->blockers_for_king & (1ULL << from) || 
-            through_bb(from,  to) & get_piece(us,  KING));
+    //first condition. check if it is blocker for king.
+    //second condition. check if move is on line with pinner.
+
+    if ((state->blockers_for_king & (1ULL << from)) == 0)
+    {
+        return true;
+    }
+
+    return (through_bb(from,  to) & get_piece(us,  KING));
 }
 
 
 bool Position::is_mate(MoveList *ml)
 {
+    return (ml->count == 0 && is_check());
+}
 
+bool Position::enough_material(Color us)
+{   
+    if((bit_count(color_bb[us])) > 2) { return true; }
+
+    if(get_piece(us, PAWN) != 0) { return true; }
+    if(get_piece(us, QUEEN) != 0) { return true; }
+    if(get_piece(us, ROOK) != 0) { return true; }
+
+    int minor_count = bit_count(get_piece(us, BISHOP))
+                    + bit_count(get_piece(us, KNIGHT));
+
+    return (minor_count > 1) == true;
+}   
+
+bool Position::is_draw()
+{
+    if(state->half_move > 99) { std::cout << "DRAW: 50 MOVES"; return true; }
+    
+    if(enough_material(side_to_move) == false && enough_material(side_to_move ^ 1) == false)
+    {
+        std::cout << "DRAW: MATERIAL";
+        return true;
+    }
 }

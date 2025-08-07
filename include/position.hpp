@@ -76,6 +76,7 @@ public:
     void init_between();
     void fen_parser(const std::string& fen);
     int perft(int depth);
+    void perft_divide(int depth);
 
     //between array in state.cpp
     Bitboard generate_between(Square s1, Square s2);
@@ -91,6 +92,8 @@ public:
     bool is_check() const;
     bool is_double_check() const;
     bool is_mate(MoveList *ml);
+    bool enough_material(Color us);
+    bool is_draw();
     bool is_stalemate(MoveList *ml);
     U8 can_castle(Color color) const;
     Piece list_to_type(Square sq);

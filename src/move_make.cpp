@@ -49,7 +49,6 @@ void Position::handle_specials(Move& move, Color us, Color enemy, Square from, S
         state->half_move = 0;
         state_history[state_index - 1].captured_piece = list_to_type(to);
         remove_piece(enemy, state_history[state_index - 1].captured_piece,  to); 
-
     }
     
     if(move.is_castling()) { castling_support(us, from, to); }
@@ -159,4 +158,65 @@ void Position::clear_epsquare()
     state->hash ^= zobrist.en_passant(state->ep_num);
     state->ep_num = ep_none;
     state->hash ^= zobrist.en_passant(state->ep_num);
+}
+
+
+
+void Position::unmake_move()
+{
+    assert(state_index > 0);
+    swap_sides();
+    state_index--;
+    Key saved_hash = state->hash;
+
+    state = &state_history[state_index];
+
+    Move move = state->move;
+    const Square us = side_to_move;
+    const Square enemy = side_to_move ^ 1;
+    const U8 from = move.get_from();
+    const U8 to = move.get_to();
+    Piece piece = move.get_piece();
+
+    
+    move_piece(side_to_move, move.get_piece(), move.get_to(), move.get_from());
+
+    if(move.is_promoted())
+    {
+        remove_piece(us, move.get_promoted(), to);
+    }
+
+    if(move.is_capture())
+    {
+        put_piece(enemy, state->captured_piece, to);
+    }
+
+    if(move.is_castling())
+    {
+        const bool is_kingside = (to > from);
+        U8 rook_from = 0;
+        U8 rook_to = 0;
+        
+        if (us == WHITE) 
+        {
+            rook_from = is_kingside ? h1 : a1;
+            rook_to = is_kingside ? f1 : d1;
+        } 
+        else 
+        {
+            rook_from = is_kingside ? h8 : a8;
+            rook_to = is_kingside ? f8 : d8;
+        }
+        // Move rook back
+        move_piece(us, ROOK, rook_to, rook_from);
+    }
+
+    if(move.is_enpassant())
+    {
+        Square ep_square = state->ep_num_to_square();
+        const U8 captured_square = ep_square + (us == WHITE ? SOUTH : NORTH);
+        put_piece(enemy, PAWN, captured_square);
+    }
+
+    state->hash = saved_hash;
 }

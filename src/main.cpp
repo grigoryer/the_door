@@ -2,31 +2,20 @@
 #include "fen_strings.hpp"
 #include "move.hpp"
 #include "move_gen.hpp"
-#include "types.hpp"
 #include "position.hpp"
+#include "types.hpp"
 #include <cstdlib>
 #include <iostream>
-#include <random>
 
 
 
 int main()
 {
-    Position pos(perft_3);
+    Position pos("r3k2r/p1ppqpb1/bn2pnp1/3PN3/1p2P3/2NQ21p/PPPBBPPP/R3K2R w KQkq - ");
     MoveList move_list;
-    AttackTables attack;
-    print_piece_board(pos);
-    srand(33);
+    
 
-    while(std::cin.get())
-    {
-        generate<LEGAL>(pos, move_list);
-        move_list.print_all();
-        int move = rand() % move_list.count;
-        move_list.move_list[move].print_move();
-        pos.make_move(move_list.move_list[move]);
-        print_piece_board(pos);
-        print_state_info(&pos);
-    }
+    pos.perft_divide(3);
+    print_piece_board(pos);
     return 0;
 }

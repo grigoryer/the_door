@@ -120,7 +120,7 @@ void Move::set_castling(bool castling)
 
 void Move::print_move()
 {
-    std::cout << n_to_sq(get_from()) << n_to_sq(get_to()) << ": 1\n";
+    std::cout << n_to_sq(get_from()) << n_to_sq(get_to()) << ": ";
 }
 
 

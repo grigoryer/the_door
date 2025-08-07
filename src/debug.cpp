@@ -63,7 +63,8 @@ void print_state_info(const Position* pos)
 
 int Position::perft(int depth)
 {
-    if(int depth = 0) { return 1; }
+    if(depth == 0) { return 1; }
+
     MoveList move_list;
     generate<LEGAL>(*this , move_list);
 
@@ -75,9 +76,34 @@ int Position::perft(int depth)
 
         make_move(move);
         nodes += perft(depth - 1);
-        //unmake_move();
+        unmake_move();
 
     }
 
     return nodes;
+}
+
+void Position::perft_divide(int depth)
+{
+    if(depth <= 0) return;
+    
+    MoveList move_list;
+    generate<LEGAL>(*this, move_list);
+    
+    int total_nodes = 0;
+    
+    for(int i = 0; i < move_list.get_count(); i++)
+    {
+        Move move = move_list.get_move(i);
+        
+        make_move(move);
+        int nodes = perft(depth - 1);
+        unmake_move();
+        
+        move.print_move();
+        std::cout << "" << nodes << "\n";
+        total_nodes += nodes;
+    }
+    
+    std::cout << "Total nodes: " << total_nodes << std::endl;
 }
