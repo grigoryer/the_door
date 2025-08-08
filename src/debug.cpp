@@ -66,7 +66,13 @@ int Position::perft(int depth)
     if(depth == 0) { return 1; }
 
     MoveList move_list;
+    
     generate<LEGAL>(*this , move_list);
+
+    if(is_mate(&move_list) || is_draw())
+    {
+        return 0;
+    }
 
     int nodes = 0;
 
@@ -106,4 +112,34 @@ void Position::perft_divide(int depth)
     }
     
     std::cout << "Total nodes: " << total_nodes << std::endl;
+}
+
+int Position::perft_debug(int depth)
+{
+    if(depth == 0) { return 1; }
+
+    MoveList move_list;
+    generate<LEGAL>(*this , move_list);
+
+    int nodes = 0;
+
+    print_piece_board(*this);
+    std::cin.get();
+
+
+    for(int i = 0; i < move_list.count; i++)
+    {
+        Move move = move_list.move_list[i];
+
+        make_move(move);
+        print_piece_board(*this);
+        std::cin.get();
+        nodes += perft(depth - 1);
+        unmake_move();
+        print_piece_board(*this);
+        std::cin.get();
+
+    }
+
+    return nodes;
 }

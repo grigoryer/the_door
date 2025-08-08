@@ -11,11 +11,16 @@
 
 int main()
 {
-    Position pos("r3k2r/p1ppqpb1/bn2pnp1/3PN3/1p2P3/2NQ21p/PPPBBPPP/R3K2R w KQkq - ");
+    Position pos;
     MoveList move_list;
     
+    print_board(pos.state->blockers_for_king);
+    print_board(pos.state->pinners);
+    print_board(pos.state->checkers_bb);
 
-    pos.perft_divide(3);
+
+    pos.perft_divide(2);
     print_piece_board(pos);
+    
     return 0;
 }

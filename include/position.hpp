@@ -77,6 +77,8 @@ public:
     void fen_parser(const std::string& fen);
     int perft(int depth);
     void perft_divide(int depth);
+    int perft_debug(int depth);
+
 
     //between array in state.cpp
     Bitboard generate_between(Square s1, Square s2);

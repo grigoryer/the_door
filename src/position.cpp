@@ -272,20 +272,38 @@ void Position::set_pins_info(Color color)
     state->blockers_for_king = 0ULL;
 
     Square ksq = get_king_square(color);
-    Bitboard snipers = get_piece(enemy, QUEEN) | get_piece(enemy, ROOK) | get_piece(enemy, BISHOP);
 
-    while(snipers)
+    Bitboard bishop_attackers = get_piece(enemy, BISHOP) | get_piece(enemy, QUEEN);
+    Bitboard rook_attackers = get_piece(enemy, ROOK) | get_piece(enemy, QUEEN);
+
+    while(bishop_attackers)
     {
-        Square sniper = lsb(snipers);
-        Bitboard bb = between_bb(sniper, ksq) & occupancy;
-        
+        Square sniper = lsb(bishop_attackers);
+        Bitboard bb = (between_bb(sniper, ksq) & attacks_bb<BISHOP>(sniper, 0));
+        bb &= occupancy;
+
         if(bit_count(bb) == 1)
         {
             state->blockers_for_king |= bb;
             state->pinners |= (1ULL << sniper);
         }
         
-        pop_lsb(snipers);
+        pop_lsb(bishop_attackers);
+    }
+
+    while(rook_attackers)
+    {
+        Square sniper = lsb(rook_attackers);
+        Bitboard bb = (between_bb(sniper, ksq) & attacks_bb<ROOK>(sniper, 0));\
+        bb &= occupancy;
+
+        if(bit_count(bb) == 1 && (color_bb[side_to_move]))
+        {
+            state->blockers_for_king |= bb;
+            state->pinners |= (1ULL << sniper);
+        }
+        
+        pop_lsb(rook_attackers);
     }
 }
 
@@ -386,7 +404,7 @@ bool Position::is_legal(Move m)
         occ |= (1ULL << to);                // add moving pawn to destination
 
         const Bitboard bishop_attackers = get_piece(enemy, BISHOP) | get_piece(enemy, QUEEN);
-        const Bitboard rook_attackers = get_piece(enemy, ROOK) | get_piece(enemy, BISHOP);
+        const Bitboard rook_attackers = get_piece(enemy, ROOK) | get_piece(enemy, QUEEN);
 
         return (!(AttackTables::get_bishop_attacks(ksq, occ) & bishop_attackers) 
                 && !(AttackTables::get_rook_attacks(ksq, occ) & rook_attackers));
