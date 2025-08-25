@@ -20,6 +20,7 @@ void Position::make_move(Move move)
     swap_sides();
 
     set_check_info(enemy);
+    reptition_counter[state->hash]++;
 }
 
 void Position::prepare_state(Move move)
@@ -49,6 +50,10 @@ void Position::handle_specials(Move& move, Color us, Color enemy, Square from, S
         state->half_move = 0;
         state_history[state_index - 1].captured_piece = list_to_type(to);
         remove_piece(enemy, state_history[state_index - 1].captured_piece,  to); 
+        if(state_history[state_index - 1].captured_piece == ROOK)
+        {
+            castling_permissions_support(enemy, to, ROOK);
+        }
     }
     
     if(move.is_castling()) { castling_support(us, from, to); }
@@ -165,9 +170,10 @@ void Position::clear_epsquare()
 void Position::unmake_move()
 {
     assert(state_index > 0);
+    reptition_counter[state->hash]--;
+    Key saved_hash = state_history[state_index - 1].hash;
     swap_sides();
     state_index--;
-    Key saved_hash = state->hash;
 
     state = &state_history[state_index];
 

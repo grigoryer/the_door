@@ -51,11 +51,12 @@ void print_piece_board(Position& pos)
 void print_state_info(const Position* pos) 
 {
     std::cout << "=== State Information ===" << std::endl;
+    std::cout << ((pos->side_to_move == WHITE) ? "WHITE\n" : "BLACK\n");
     std::cout << "Castling Rights: " << static_cast<int>(pos->state->castling_rights) << std::endl;
     std::cout << "En Passant Square: " << static_cast<int>(pos->state->ep_num) << std::endl;
     std::cout << "Half Move Clock: " << pos->state->half_move << std::endl;
     std::cout << "Full Move Number: " << pos->state->full_move << std::endl;
-    std::cout << "Hash Key: " << pos->state->hash << std::endl;
+    std::cout << "Hash Key: " << (pos->state->hash) << std::endl;
     std::cout << "=========================" << std::endl;
 }
 

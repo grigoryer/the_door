@@ -9,7 +9,6 @@ class Move
 {
 private:
     U32 move;
-        
     static const U32 FROM_MASK = 0x3F;        // 6 bits: 0-5
     static const U32 TO_MASK = 0xFC0;       // 6 bits: 6-11
     static const U32 PIECE_MASK = 0xF000;       // 4 bits: 12-15

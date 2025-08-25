@@ -4,7 +4,9 @@
 #include "move.hpp"
 #include <array>
 #include <cassert>
+#include <cstddef>
 #include <types.hpp>
+#include <unordered_map>
 
 
 
@@ -62,6 +64,7 @@ public:
     int state_index = 0;
     std::array<StateInfo, MAX_HISTORY> state_history;
     StateInfo* state = &state_history[state_index];
+    std::unordered_map<Key, U8> reptition_counter;
 
     std::array<std::array<Bitboard, NUM_SQUARES>, NUM_SQUARES> between_array = {0ULL};
     std::array<std::array<Bitboard, NUM_SQUARES>, NUM_SQUARES> through_array = {0ULL};

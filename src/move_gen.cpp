@@ -224,8 +224,16 @@ void generate(Position& pos, MoveList& move_list)
 
 template void generate<QUIETS>(Position& pos, MoveList& move_list);
 template void generate<CAPTURES>(Position& pos, MoveList& move_list);
-template void generate<NON_EVASIONS>(Position& pos, MoveList& move_list);
 template void generate<EVASIONS>(Position& pos, MoveList& move_list);
+
+
+template<>
+void generate<NON_EVASIONS>(Position& pos, MoveList& move_list)
+{
+    generate<CAPTURES>(pos, move_list);
+    generate<QUIETS>(pos, move_list);
+}
+
 
 template<>
 void generate<LEGAL>(Position& pos, MoveList& move_list)

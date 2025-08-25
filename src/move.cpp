@@ -120,7 +120,7 @@ void Move::set_castling(bool castling)
 
 void Move::print_move()
 {
-    std::cout << n_to_sq(get_from()) << n_to_sq(get_to()) << ": ";
+    std::cout << n_to_sq(get_from()) << n_to_sq(get_to()) << "\n";
 }
 
 
@@ -154,8 +154,6 @@ void MoveList::print_all()
 {
     for(int i = 0; i < count; i++)
     {
-
-        std::cout << (move_list[i].is_capture() == true || move_list[i].is_enpassant()  ? "IS CAPTURE: " : "NOT CAPTURE: ");
         move_list[i].print_move();
     }
 }

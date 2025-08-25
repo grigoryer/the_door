@@ -23,5 +23,4 @@ void generate(Position& pos, MoveList& move_list);
 extern template void generate<QUIETS>(Position& pos, MoveList& move_list);
 extern template void generate<CAPTURES>(Position& pos, MoveList& move_list);
 extern template void generate<EVASIONS>(Position& pos, MoveList& move_list);
-extern template void generate<NON_EVASIONS>(Position& pos, MoveList& move_list);
 

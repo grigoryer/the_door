@@ -9,6 +9,9 @@ using Piece = int8_t;
 using U32 = uint32_t;
 using U8 = uint8_t;
 
+const int negative_infinity = -9999999;
+const int positive_infinity = 9999999;
+const int SEARCH_DEPTH = 5;
 
 const int NUM_SQUARES = 64;
 const int NUM_COLOR = 2;

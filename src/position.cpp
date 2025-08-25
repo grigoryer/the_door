@@ -6,6 +6,7 @@
 #include <array>
 #include <cassert>
 #include <sstream>
+#include <unordered_set>
 
 
 
@@ -146,7 +147,7 @@ void Position::init()
 
     set_check_info(side_to_move);
     init_piece_board();
-    init_hash();
+    state->hash  = init_hash();
 }
 
 
@@ -462,11 +463,12 @@ bool Position::enough_material(Color us)
 
 bool Position::is_draw()
 {
-    if(state->half_move > 99) { std::cout << "DRAW: 50 MOVES"; return true; }
+    if(state->half_move > 99) { return true; }
     
+    if(reptition_counter[state->hash] > 3) { return true; }
+
     if(enough_material(side_to_move) == false && enough_material(side_to_move ^ 1) == false)
     {
-        std::cout << "DRAW: MATERIAL";
         return true;
     }
 }
