@@ -120,7 +120,18 @@ void Move::set_castling(bool castling)
 
 void Move::print_move()
 {
-    std::cout << n_to_sq(get_from()) << n_to_sq(get_to()) << "\n";
+    std::cout << n_to_sq(get_from()) << n_to_sq(get_to()); 
+    
+    if(is_promoted()){
+        switch(get_promoted())
+        {
+            case(KNIGHT): std::cout << ("n"); break;
+            case(BISHOP): std::cout << ("b"); break;
+            case(ROOK):   std::cout << ("r"); break;
+            case(QUEEN):  std::cout << ("q"); break; //NOLINT
+        }
+    }
+    std::cout << ": ";
 }
 
 

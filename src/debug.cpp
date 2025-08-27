@@ -133,9 +133,10 @@ int Position::perft_debug(int depth)
         Move move = move_list.move_list[i];
 
         make_move(move);
+        move.print_move(); std::cout << "\n";
         print_piece_board(*this);
         std::cin.get();
-        nodes += perft(depth - 1);
+        nodes += perft_debug(depth - 1);
         unmake_move();
         print_piece_board(*this);
         std::cin.get();

@@ -230,7 +230,7 @@ Bitboard Position::get_piece(Color color, Piece piece) const
 }
 
 void Position::set_check_squares(Color color)
-{   
+{  
     Square ksq = get_king_square(color);
     
     state->check_squares[PAWN]   = AttackTables::pawn_attacks[color][ksq];

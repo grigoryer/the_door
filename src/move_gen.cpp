@@ -9,11 +9,11 @@
 template<GenType Type>
 void gen_promo(MoveList& move_list, Square from, Square to, bool capture)
 {
-    if constexpr (Type == CAPTURES || Type == NON_EVASIONS)
+    if constexpr (Type == CAPTURES || Type == EVASIONS)
     {
         move_list.add(Move(from, to, PAWN, QUEEN, capture, false, false, false));
     }
-    if constexpr (Type == QUIETS || Type == NON_EVASIONS)
+    if constexpr (Type != CAPTURES || Type == EVASIONS)
     {
         move_list.add(Move(from, to, PAWN, KNIGHT, capture, false, false, false));
         move_list.add(Move(from, to, PAWN, BISHOP, capture, false, false, false));
@@ -103,9 +103,11 @@ void gen_pawns(const Position& pos, MoveList& move_list, Bitboard target)
         Bitboard eat_right = (shift<up_right>(promo_bb) & enemies);
         Bitboard eat_left = (shift<up_left>(promo_bb) & enemies);
 
-        if constexpr( Type == EVASIONS)
+        if constexpr(Type == EVASIONS)
         {
             single &= target;
+            eat_left &= target;
+            eat_right &= target;
         }
         
         while(single)
@@ -188,7 +190,7 @@ void generate_all(const Position& pos, MoveList& move_list)
         move_list.add(Move(ksq, to, KING, NONE, get_bit(pos.color_bb[enemy], to)));
     }
 
-    if constexpr (Type != EVASIONS)
+    if constexpr (Type != CAPTURES && Type != EVASIONS)
     {
         const U8 king_side  = (us == WHITE ? WK : BK);
         const U8 queen_side = (us == WHITE ? WQ : BQ);
