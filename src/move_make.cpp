@@ -29,7 +29,8 @@ void Position::prepare_state(Move move)
     StateInfo& prev_state = state_history[state_index - 1];
     prev_state.move = move;
     state = &state_history[state_index];
-    *state = prev_state;                 
+    *state = prev_state;     
+
 }
 
 void Position::handle_clock(Piece piece)

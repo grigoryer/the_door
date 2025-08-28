@@ -11,11 +11,10 @@
 
 int main()
 {
-    Position pos(perft_6);
 
-    print_piece_board(pos);
+    //test_correct();
 
-    pos.perft_divide(5);
-    //pos.perft(5);
+    Position pos;
+    std::cout << pos.perft(6);
     return 0;
 }

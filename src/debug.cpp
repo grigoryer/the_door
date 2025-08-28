@@ -1,3 +1,4 @@
+#include "fen_strings.hpp"
 #include "move_gen.hpp"
 #include "types.hpp"
 #include "position.hpp"
@@ -64,11 +65,11 @@ void print_state_info(const Position* pos)
 
 int Position::perft(int depth)
 {
-    if(depth == 0) { return 1; }
-
     MoveList move_list;
     
     generate<LEGAL>(*this , move_list);
+
+    if(depth == 1) { return move_list.get_count(); }
 
     if(is_mate(&move_list) || is_draw())
     {
@@ -125,6 +126,7 @@ int Position::perft_debug(int depth)
     int nodes = 0;
 
     print_piece_board(*this);
+    print_state_info(this);
     std::cin.get();
 
 
@@ -135,13 +137,38 @@ int Position::perft_debug(int depth)
         make_move(move);
         move.print_move(); std::cout << "\n";
         print_piece_board(*this);
+        print_state_info(this);
         std::cin.get();
         nodes += perft_debug(depth - 1);
         unmake_move();
         print_piece_board(*this);
+        print_state_info(this);
         std::cin.get();
 
     }
 
     return nodes;
+}
+
+
+
+
+void test_correct()
+{
+    Position pos;
+    if(pos.perft(5) != 4865609) { std::cout << "\nStart pos fail\n"; return; }
+
+    Position pos1(perft_2);
+    if(pos1.perft(4) != 4085603) { 
+        std::cout << "\nperft_2 fail";
+        return; 
+    }
+
+    Position pos2(perft_3);
+    if(pos2.perft(6) != 11030083) { std::cout << "\nperft_3 fail\n"; return; }
+
+    Position pos3(perft_4);
+    if(pos3.perft(4) != 422333) { std::cout << "\nperft_4 fail\n"; return; }
+
+    std::cout << "\nTests passed\n";
 }

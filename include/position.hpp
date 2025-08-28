@@ -82,7 +82,6 @@ public:
     void perft_divide(int depth);
     int perft_debug(int depth);
 
-
     //between array in state.cpp
     Bitboard generate_between(Square s1, Square s2);
     Bitboard between_bb(Square s1, Square s2) const;
@@ -144,3 +143,4 @@ public:
 
 void print_piece_board(Position& pos);
 void print_state_info(const Position* pos);
+void test_correct();

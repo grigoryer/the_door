@@ -6,7 +6,6 @@
 #include <array>
 #include <cassert>
 #include <sstream>
-#include <unordered_set>
 
 
 
@@ -307,6 +306,7 @@ void Position::set_pins_info(Color color)
         pop_lsb(rook_attackers);
     }
 }
+
 
 void Position::set_check_info(Color color)
 {

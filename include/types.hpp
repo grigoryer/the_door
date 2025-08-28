@@ -19,6 +19,8 @@ const int NUM_RANKS = 8;
 const int NUM_FILES = 8;
 const int NUM_PIECES = 6;
 const int NUM_CASTLING = 16;
+
+const int NUM_SLIDERS = 2;
 const int NUM_EPSQUARES = 17;
 
 const int MAX_MOVES = 256;
@@ -48,6 +50,12 @@ enum PieceType : Piece
 {
     KING, QUEEN, ROOK, BISHOP, KNIGHT, PAWN, NONE
 };
+
+enum SLIDER : Piece
+{
+    queen_slider, rook_slider, bishop_slider,
+};
+
 
 enum PieceList : Piece
 {
