@@ -119,7 +119,7 @@ Bitboard Position::through_bb(Square s1, Square s2) const
     return through_array[s1][s2];
 }
 
-Square StateInfo::ep_num_to_square() const 
+Square StateInfo::ep_num_to_square(U8 ep_num) 
 {   
     assert(ep_num >= 0 && ep_num <= ep_none);
     if (ep_num <= ep_white_h) { return a3 + ep_num; }

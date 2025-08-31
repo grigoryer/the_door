@@ -183,7 +183,7 @@ inline bool more_than_one(Bitboard b)
     return __builtin_popcountll(b) > 1;
 } 
 
-constexpr Bitboard square_bb(Square s)
+inline constexpr Bitboard square_bb(Square s)
 {
     return (1ULL << s);
 }

@@ -13,15 +13,18 @@
 template<PieceType pt>
 Bitboard attacks_bb(Square sq, Bitboard occupancy)
 {
-    switch(pt) 
-    {
-        case(KING)   : return AttackTables::king_attacks[sq]; break;
-        case(KNIGHT) : return AttackTables::knight_attacks[sq]; break;
-        case(BISHOP) : return AttackTables::get_bishop_attacks(sq, occupancy); break;
-        case(ROOK)   : return AttackTables::get_rook_attacks(sq, occupancy); break;
-        case(QUEEN)  : return AttackTables::get_queen_attacks(sq, occupancy); break;
-    }
+    if constexpr (pt == KING)
+        return AttackTables::king_attacks[sq];
+    else if constexpr (pt == KNIGHT)
+        return AttackTables::knight_attacks[sq];
+    else if constexpr (pt == BISHOP)
+        return AttackTables::get_bishop_attacks(sq, occupancy);
+    else if constexpr (pt == ROOK)
+        return AttackTables::get_rook_attacks(sq, occupancy);
+    else if constexpr (pt == QUEEN)
+        return AttackTables::get_queen_attacks(sq, occupancy);
 }
+
 
 class StateInfo
 {
@@ -38,12 +41,12 @@ public:
     //redo each time
     Move move;
     Bitboard checkers_bb = 0ULL;
-    std::array<Bitboard, NUM_PIECES> check_squares = {0ULL};  
-    Bitboard blockers_for_king = 0ULL;                       
-    Bitboard pinners = 0ULL;                                 
 
-    Square ep_num_to_square() const;
-    Square square_to_ep_num(Square sq);
+    std::array<std::array<Bitboard, NUM_PIECES>, NUM_COLOR> check_squares = {0ULL};  
+    std::array<Bitboard, NUM_COLOR> blockers_for_king = {0ULL};
+    
+    static Square ep_num_to_square(U8 ep_num);
+    static Square square_to_ep_num(Square sq);
 
     StateInfo();
     StateInfo(const StateInfo& old);
@@ -53,14 +56,17 @@ class Position
 {
 public: 
 //member variables
+
+    //bitboards and piece mailbox
     std::array<Bitboard, NUM_PIECES> piece_bb;
     std::array<Bitboard, NUM_COLOR> color_bb;
     std::array<Piece, NUM_SQUARES> piece_board;
-
     Bitboard occupancy;
+    
     Color side_to_move;
     ZobristRandoms zobrist;
 
+    //state history
     int state_index = 0;
     std::array<StateInfo, MAX_HISTORY> state_history;
     StateInfo* state = &state_history[state_index];
@@ -91,30 +97,31 @@ public:
 
     //utilities
     StateInfo& get_state();
-    Bitboard get_piece(Color color, Piece piece) const ;
-    Square get_king_square(Color color) const ;
+    inline Bitboard get_piece(Color color, Piece piece) const ;
+    inline Square get_king_square(Color color) const ;
+
     bool is_check() const;
     bool is_double_check() const;
     bool is_mate(MoveList *ml);
+
     bool enough_material(Color us);
     bool is_draw();
     bool is_stalemate(MoveList *ml);
+
     U8 can_castle(Color color) const;
+
     Piece list_to_type(Square sq);
     Piece type_to_list(Piece piece, Color color);
+
     void update_occupancy();
     bool is_square_attacked(Square sq, Color color);
     bool is_square_attacked(Square sq, Color color, Bitboard occ);
 
-
-
     //state / pinners and checkers
     bool is_legal(Move m);
     void set_state();
-    void set_check_info(Color color);
     void set_check_squares(Color color);
-    void set_pins_info(Color color);
-    Bitboard set_checkers();
+    Bitboard set_checkers_blockers(Color color);
 
     //do move
     void make_move(Move move);
@@ -135,10 +142,7 @@ public:
     void unmake_move();
     void restore_castling(Move move, Color us);
     void restore_enpassant(Move move);
-
 };
-
-
 
 
 void print_piece_board(Position& pos);

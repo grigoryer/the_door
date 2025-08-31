@@ -86,7 +86,7 @@ void gen_pawns(const Position& pos, MoveList& move_list, Bitboard target)
         //en passant
         if(pos.state->ep_num != ep_none)
         {
-            Square ep = pos.state->ep_num_to_square();
+            Square ep = StateInfo::ep_num_to_square(pos.state->ep_num);
             Bitboard ep_attacks = AttackTables::pawn_attacks[color ^ 1][ep] & regular_bb;
 
             while(ep_attacks)
@@ -161,6 +161,7 @@ void generate_all(const Position& pos, MoveList& move_list)
     Color enemy = us ^ 1;
     Bitboard target = FullBB;
     Square ksq = pos.get_king_square(us);
+    
 
     if(!pos.is_double_check())
     {
@@ -175,8 +176,9 @@ void generate_all(const Position& pos, MoveList& move_list)
         if (Type == CAPTURES) { target &= pos.color_bb[enemy]; }
         if (Type == QUIETS) { target &= ~pos.color_bb[enemy]; }
 
-        gen_pawns<Type, us>(pos, move_list, target);
+
         gen_piece<QUEEN, us>(pos, move_list, target);
+        gen_pawns<Type, us>(pos, move_list, target);
         gen_piece<ROOK, us>(pos, move_list, target);
         gen_piece<BISHOP, us>(pos, move_list, target);
         gen_piece<KNIGHT, us>(pos, move_list, target);
@@ -212,7 +214,6 @@ template<GenType Type>
 void generate(Position& pos, MoveList& move_list)
 {
     Color us = pos.side_to_move;
-
     if(us == WHITE)
     {
         generate_all<Type, WHITE>(pos, move_list);
@@ -221,12 +222,13 @@ void generate(Position& pos, MoveList& move_list)
     {
         generate_all<Type, BLACK>(pos, move_list);
     }
-
 }
 
 template void generate<QUIETS>(Position& pos, MoveList& move_list);
 template void generate<CAPTURES>(Position& pos, MoveList& move_list);
 template void generate<EVASIONS>(Position& pos, MoveList& move_list);
+
+
 
 
 template<>
@@ -241,15 +243,21 @@ template<>
 void generate<LEGAL>(Position& pos, MoveList& move_list)
 {
     move_list.clear();
-    MoveList pseudo;
-    pos.is_check() == true ? generate<EVASIONS>(pos, pseudo) : generate<NON_EVASIONS>(pos, pseudo);
-    for(int i = 0; i < pseudo.count; i++)
-    {
-        if(pos.is_legal(pseudo.move_list[i]))
-        {
-            move_list.add(pseudo.move_list[i]);
-        }
-    }
-}
+    pos.set_checkers_blockers(pos.side_to_move);
 
+    // Step 1: Generate all pseudo moves into move_list
+    if (pos.is_check())
+        generate<EVASIONS>(pos, move_list);
+    else
+        generate<NON_EVASIONS>(pos, move_list);
+
+    // Step 2: Compact in-place, keeping only legal moves
+    int j = 0;
+    for (int i = 0; i < move_list.count; i++)
+    {
+        if (pos.is_legal(move_list.move_list[i]))
+            move_list.move_list[j++] = move_list.move_list[i];
+    }
+    move_list.count = j;
+}
 

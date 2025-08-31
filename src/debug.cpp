@@ -51,13 +51,14 @@ void print_piece_board(Position& pos)
 
 void print_state_info(const Position* pos) 
 {
-    std::cout << "=== State Information ===" << std::endl;
+    std::cout << "\n=== State Information ===" << std::endl;
     std::cout << ((pos->side_to_move == WHITE) ? "WHITE\n" : "BLACK\n");
     std::cout << "Castling Rights: " << static_cast<int>(pos->state->castling_rights) << std::endl;
     std::cout << "En Passant Square: " << static_cast<int>(pos->state->ep_num) << std::endl;
     std::cout << "Half Move Clock: " << pos->state->half_move << std::endl;
     std::cout << "Full Move Number: " << pos->state->full_move << std::endl;
     std::cout << "Hash Key: " << (pos->state->hash) << std::endl;
+    std::cout << "IS CHECK?: " << (pos->is_check() ? "YES" : "NO") << std::endl;
     std::cout << "=========================" << std::endl;
 }
 
@@ -65,11 +66,13 @@ void print_state_info(const Position* pos)
 
 int Position::perft(int depth)
 {
+
+    if(depth == 0) { return 1; } 
+
     MoveList move_list;
     
     generate<LEGAL>(*this , move_list);
 
-    if(depth == 1) { return move_list.get_count(); }
 
     if(is_mate(&move_list) || is_draw())
     {
@@ -85,7 +88,6 @@ int Position::perft(int depth)
         make_move(move);
         nodes += perft(depth - 1);
         unmake_move();
-
     }
 
     return nodes;
@@ -126,7 +128,10 @@ int Position::perft_debug(int depth)
     int nodes = 0;
 
     print_piece_board(*this);
+    move_list.print_all();    
     print_state_info(this);
+
+
     std::cin.get();
 
 
@@ -155,20 +160,36 @@ int Position::perft_debug(int depth)
 
 void test_correct()
 {
+    bool pass = true;
+
     Position pos;
-    if(pos.perft(5) != 4865609) { std::cout << "\nStart pos fail\n"; return; }
+    int perft_1 = pos.perft(5);
+    if(perft_1 != 4865609) { pass = false; }
 
-    Position pos1(perft_2);
-    if(pos1.perft(4) != 4085603) { 
-        std::cout << "\nperft_2 fail";
-        return; 
-    }
+    std::cout << ((perft_1 == 4865609) ? "\nTest 1 Pass: " : "\nTest 1 Fail: ");
+    std::cout << perft_1 << "/4865609\n";
 
-    Position pos2(perft_3);
-    if(pos2.perft(6) != 11030083) { std::cout << "\nperft_3 fail\n"; return; }
+    Position pos2(perft_2);
+    int perft_2 = pos2.perft(4);
+    if(perft_2 != 4085603) { pass = false; }
 
-    Position pos3(perft_4);
-    if(pos3.perft(4) != 422333) { std::cout << "\nperft_4 fail\n"; return; }
+    std::cout << ((perft_2 == 4085603) ? "\nTest 2 Pass: " : "\nTest 2 Fail: ");
+    std::cout << perft_2 << "/4085603\n";
 
-    std::cout << "\nTests passed\n";
+    Position pos3(perft_3);
+    int perft_3 = pos3.perft(6);
+    if(perft_3 != 11030083) { pass = false; }
+
+    std::cout << ((perft_3 == 11030083) ? "\nTest 3 Pass: " : "\nTest 3 Fail: ");
+    std::cout << perft_3 << "/11030083\n";
+
+    Position pos4(perft_4);
+    int perft_4 = pos4.perft(4);
+    if(perft_4 != 422333) { pass = false; }
+
+    std::cout << ((perft_4 == 422333) ? "\nTest 4 Pass: " : "\nTest 4 Fail: ");
+    std::cout << perft_4 << "/422333\n";
+
+    std::cout << ((pass == true) ? "\nTests passed\n\n" : "\nTests failed\n\n");
+    
 }

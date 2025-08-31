@@ -1,5 +1,6 @@
 #include "position.hpp"
 #include "types.hpp"
+#include "move.hpp"
 #include <iostream>
 
 
@@ -18,9 +19,12 @@ void Position::make_move(Move move)
     handle_specials(move, us, enemy, from, to, &piece);
     move_piece(us, piece, from, to);
     swap_sides();
-
-    set_check_info(enemy);
-    reptition_counter[state->hash]++;
+    
+    //reptition_counter[state->hash]++;
+    if(piece == KING)
+    {
+        set_check_squares(us);
+    }
 }
 
 void Position::prepare_state(Move move)
@@ -171,7 +175,7 @@ void Position::clear_epsquare()
 void Position::unmake_move()
 {
     assert(state_index > 0);
-    reptition_counter[state->hash]--;
+    //reptition_counter[state->hash]--;
     Key saved_hash = state_history[state_index - 1].hash;
     swap_sides();
     state_index--;
@@ -220,7 +224,7 @@ void Position::unmake_move()
 
     if(move.is_enpassant())
     {
-        Square ep_square = state->ep_num_to_square();
+        Square ep_square = StateInfo::ep_num_to_square(state->ep_num);
         const U8 captured_square = ep_square + (us == WHITE ? SOUTH : NORTH);
         put_piece(enemy, PAWN, captured_square);
     }
