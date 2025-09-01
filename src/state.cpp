@@ -121,16 +121,13 @@ Bitboard Position::through_bb(Square s1, Square s2) const
 
 Square StateInfo::ep_num_to_square(U8 ep_num) 
 {   
-    assert(ep_num >= 0 && ep_num <= ep_none);
     if (ep_num <= ep_white_h) { return a3 + ep_num; }
     return (a6 + (ep_num - ep_black_a));
 }
 
 Square StateInfo::square_to_ep_num(Square sq) 
 {   
-    assert(sq >= 0 && sq < NUM_SQUARES);
     Square rank = sq / NUM_RANKS;
-    assert(rank == RANK_4 || rank == RANK_5);
     Square file = sq % NUM_FILES;
     return file + (rank == RANK_4 ? 0 : NUM_FILES);
 }

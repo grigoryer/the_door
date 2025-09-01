@@ -212,8 +212,14 @@ Key Position::init_hash()
 }
 
 
+void Position::set_king_square(Color color)
+{
+    state->king_square[color] = lsb(get_piece(color, KING));
+}
+
 void Position::set_check_squares(Color color)
 {  
+    set_king_square(color);
     Square ksq = get_king_square(color);
     Bitboard occ = 0ULL;
 
@@ -302,46 +308,6 @@ Bitboard Position::set_checkers_blockers(Color color)
     return state->checkers_bb;
 }
 
-/*
-Bitboard Position::set_checkers(Color color)
-{  
-    Color us = color;
-    Color enemy = color ^ 1;
-    state->checkers_bb = 0ULL;
-    state->blockers_for_king[us] = 0ULL;
-
-    for(Piece piece = QUEEN; piece <= BISHOP; piece++ )
-    {
-        Bitboard attacker = get_piece(enemy, piece);
-        attacker &= state->check_squares[us][piece];
-
-        if(attacker != 0)
-        {
-            while (attacker)
-            {
-                Square from = pop_lsb(attacker);
-                Bitboard bb = between_bb(from, get_king_square(us)) & occupancy;
-
-                if(bit_count(bb) == 0)
-                {
-                    state->checkers_bb |= square_bb(from);
-                }
-                else if(bit_count(bb & color_bb[us]) == 1)
-                {
-                    state->blockers_for_king[us] |= (bb & color_bb[us]);
-                }
-                
-            }
-        }
-    }
-
-    for(Piece piece = KNIGHT; piece <= PAWN; piece++ )
-    {
-        Bitboard attacker = get_piece(enemy, piece);
-        state->checkers_bb |= (state->check_squares[us][piece] & attacker);
-    }
-    return state->checkers_bb;
-}*/
 
 U8 Position::can_castle(Color color) const
 {
@@ -366,6 +332,8 @@ U8 Position::can_castle(Color color) const
 
     return output;
 }
+
+
 
 StateInfo& Position::get_state()
 {
@@ -393,7 +361,6 @@ bool Position::is_legal(Move m)
 
     if(move_is_enpassant(m))
     {
-        
         Bitboard occ = occupancy;
         Square captured_pawn_sq = StateInfo::ep_num_to_square(state->ep_num) + (us == WHITE ? SOUTH : NORTH);
 
@@ -418,6 +385,7 @@ bool Position::is_legal(Move m)
             cur += shift; 
             if(is_square_attacked(cur, us)) { return false; }
         }
+        return true;
     }
 
     if(move_get_piece(m) == KING)
@@ -461,8 +429,20 @@ bool Position::enough_material(Color us)
 bool Position::is_draw()
 {
     if(state->half_move > 99) { return true; }
-    
-    if(reptition_counter[state->hash] > 3) { return true; }
+
+    StateInfo* state_iterator = &state_history[state_index - 1];
+    int counter = 0;
+
+    while(!move_is_capture(state_iterator->move) && move_get_piece(state_iterator->move) != PAWN)
+    {
+        if(state_iterator->hash == state->hash)
+        {
+            counter++;
+        }
+        state_iterator--;
+    }
+
+    if(counter >= 3) { return true; }
 
     if(enough_material(side_to_move) == false && enough_material(side_to_move ^ 1) == false)
     {

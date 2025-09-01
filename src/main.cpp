@@ -13,23 +13,7 @@ int main()
 {
 
     Position pos;
-    //Search eng(pos);
-
-
-    //test_correct();
-    std::cout << pos.perft(5);
-    
-    // MoveList ml;
-    //generate<LEGAL>(pos, ml);
     //print_piece_board(pos);
-    //print_board(pos.state->blockers_for_king[WHITE]);
 
-
-    /*while(std::cin.get())
-    {
-        pos.make_move(eng.best_move());
-        print_piece_board(pos);
-        print_state_info(&pos);
-    }*/
     return 0;
 }

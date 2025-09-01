@@ -25,7 +25,7 @@ void print_board(Bitboard bitboard)
 
 
 
-void print_piece_board(Position& pos) 
+void print_piece_board(Position& pos)
 {
 
     constexpr std::array<char, NUM_PIECES * 2 + 1> piece_to_char = {
@@ -49,16 +49,16 @@ void print_piece_board(Position& pos)
     std::cout << "\n   a b c d e f g h\n";
 }
 
-void print_state_info(const Position* pos) 
+void print_state_info(const Position& pos) 
 {
     std::cout << "\n=== State Information ===" << std::endl;
-    std::cout << ((pos->side_to_move == WHITE) ? "WHITE\n" : "BLACK\n");
-    std::cout << "Castling Rights: " << static_cast<int>(pos->state->castling_rights) << std::endl;
-    std::cout << "En Passant Square: " << static_cast<int>(pos->state->ep_num) << std::endl;
-    std::cout << "Half Move Clock: " << pos->state->half_move << std::endl;
-    std::cout << "Full Move Number: " << pos->state->full_move << std::endl;
-    std::cout << "Hash Key: " << (pos->state->hash) << std::endl;
-    std::cout << "IS CHECK?: " << (pos->is_check() ? "YES" : "NO") << std::endl;
+    std::cout << ((pos.side_to_move == WHITE) ? "WHITE\n" : "BLACK\n");
+    std::cout << "Castling Rights: " << static_cast<int>(pos.state->castling_rights) << std::endl;
+    std::cout << "En Passant Square: " << static_cast<int>(pos.state->ep_num) << std::endl;
+    std::cout << "Half Move Clock: " << pos.state->half_move << std::endl;
+    std::cout << "Full Move Number: " << pos.state->full_move << std::endl;
+    std::cout << "Hash Key: " << (pos.state->hash) << std::endl;
+    std::cout << "IS CHECK?: " << (pos.is_check() ? "YES" : "NO") << std::endl;
     std::cout << "=========================" << std::endl;
 }
 
@@ -66,13 +66,11 @@ void print_state_info(const Position* pos)
 
 int Position::perft(int depth)
 {
-
-    if(depth == 0) { return 1; } 
-
     MoveList move_list;
     
     generate<LEGAL>(*this , move_list);
 
+    if(depth == 1) { return move_list.count; } 
 
     if(is_mate(&move_list) || is_draw())
     {

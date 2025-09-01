@@ -6,7 +6,6 @@
 #include <cassert>
 #include <cstddef>
 #include <types.hpp>
-#include <unordered_map>
 
 
 
@@ -44,6 +43,8 @@ public:
 
     std::array<std::array<Bitboard, NUM_PIECES>, NUM_COLOR> check_squares = {0ULL};  
     std::array<Bitboard, NUM_COLOR> blockers_for_king = {0ULL};
+
+    std::array<Square, NUM_COLOR> king_square = {0};
     
     static Square ep_num_to_square(U8 ep_num);
     static Square square_to_ep_num(Square sq);
@@ -70,7 +71,6 @@ public:
     int state_index = 0;
     std::array<StateInfo, MAX_HISTORY> state_history;
     StateInfo* state = &state_history[state_index];
-    std::unordered_map<Key, U8> reptition_counter;
 
     std::array<std::array<Bitboard, NUM_SQUARES>, NUM_SQUARES> between_array = {0ULL};
     std::array<std::array<Bitboard, NUM_SQUARES>, NUM_SQUARES> through_array = {0ULL};
@@ -100,8 +100,7 @@ public:
 
     inline Square get_king_square(Color color) const
     {
-        assert(get_piece(color, KING) != 0);
-        return lsb(get_piece(color, KING));
+        return state->king_square[color];
     }
 
     inline Bitboard get_piece(Color color, Piece piece) const
@@ -109,6 +108,7 @@ public:
         return piece_bb[piece] & color_bb[color];
     }
 
+    void set_king_square(Color color);
     bool is_check() const;
     bool is_double_check() const;
     bool is_mate(MoveList *ml);

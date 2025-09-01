@@ -16,9 +16,11 @@ void Position::make_move(Move move)
     Piece piece = move_get_piece(move);
 
     handle_clock(piece);
+
+    if(state->ep_num != ep_none) { clear_epsquare(); }
+
     handle_specials(move, us, enemy, from, to, piece);
 
-    
     if(move_is_promoted(move)) 
     {   
         remove_piece(us, PAWN, from);
@@ -26,9 +28,9 @@ void Position::make_move(Move move)
     } 
 
     move_piece(us, piece, from, to);
+
     swap_sides();
     
-    reptition_counter[state->hash]++;
     if(piece == KING)
     {
         set_check_squares(us);
@@ -54,8 +56,11 @@ void Position::handle_clock(Piece piece)
 
 void Position::handle_specials(Move& move, Color us, Color enemy, Square from, Square to, Piece piece)
 {
-    set_epsquare(ep_none);
-    if(move_is_double(move)) { set_epsquare(state->square_to_ep_num(to)); }
+    if(move_is_double(move)) { set_epsquare(state->square_to_ep_num(to)); return; }
+
+    if(move_is_castling(move)) { castling_support(us, from, to); return; }
+
+    if(move_is_enpassant(move)) { remove_piece(enemy, PAWN,  to + (enemy == BLACK ? SOUTH : NORTH)); return; }
     
     if(move_is_capture(move)) 
     { 
@@ -67,14 +72,8 @@ void Position::handle_specials(Move& move, Color us, Color enemy, Square from, S
             castling_permissions_support(enemy, to, ROOK);
         }
     }
-    
-    if(move_is_castling(move)) { castling_support(us, from, to); }
 
-
-    if(move_is_enpassant(move)) { remove_piece(enemy, PAWN,  to + (enemy == BLACK ? SOUTH : NORTH)); }
-
-    if(state->castling_rights != 0 && (piece == ROOK || piece == KING)) { castling_permissions_support(us, from, piece); }
-    
+    if((piece == ROOK || piece == KING) && state->castling_rights != 0) { castling_permissions_support(us, from, piece); }
 }
 
 void Position::castling_permissions_support(Color color, Square from, Piece piece)
@@ -155,33 +154,29 @@ void Position::update_castling_permissions(U8 permissions)
 {
     state->hash ^= zobrist.castling(state->castling_rights);
     state->castling_rights = permissions;
-    state->hash ^= zobrist.castling(state->castling_rights);
+    state->hash ^= zobrist.castling(permissions);
 }
 
 void Position::set_epsquare(Square sq)
 {
     state->hash ^= zobrist.en_passant(state->ep_num);
     state->ep_num = sq;
-    state->hash ^= zobrist.en_passant(state->ep_num);
+    state->hash ^= zobrist.en_passant(sq);
 }
 
 void Position::clear_epsquare()
 {
     state->hash ^= zobrist.en_passant(state->ep_num);
     state->ep_num = ep_none;
-    state->hash ^= zobrist.en_passant(state->ep_num);
+    state->hash ^= zobrist.en_passant(ep_none);
 }
-
-
 
 void Position::unmake_move()
 {
     assert(state_index > 0);
-    reptition_counter[state->hash]--;
     Key saved_hash = state_history[state_index - 1].hash;
     swap_sides();
     state_index--;
-
     state = &state_history[state_index];
 
     Move move = state->move;
