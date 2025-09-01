@@ -11,16 +11,24 @@ void Position::make_move(Move move)
 
     const Square us = side_to_move;
     const Square enemy = side_to_move ^ 1;
-    const U8 from = move.get_from();
-    const U8 to = move.get_to();
-    Piece piece = move.get_piece();
-    
+    const U8 from = move_get_from(move);
+    const U8 to = move_get_to(move);
+    Piece piece = move_get_piece(move);
+
     handle_clock(piece);
-    handle_specials(move, us, enemy, from, to, &piece);
+    handle_specials(move, us, enemy, from, to, piece);
+
+    
+    if(move_is_promoted(move)) 
+    {   
+        remove_piece(us, PAWN, from);
+        piece = move_get_promoted(move); 
+    } 
+
     move_piece(us, piece, from, to);
     swap_sides();
     
-    //reptition_counter[state->hash]++;
+    reptition_counter[state->hash]++;
     if(piece == KING)
     {
         set_check_squares(us);
@@ -44,13 +52,12 @@ void Position::handle_clock(Piece piece)
     if(piece == PAWN) { state->half_move = 0; }
 }
 
-void Position::handle_specials(Move& move, Color us, Color enemy, Square from, Square to, Piece* piece)
+void Position::handle_specials(Move& move, Color us, Color enemy, Square from, Square to, Piece piece)
 {
     set_epsquare(ep_none);
-
-    if(move.is_double()) { set_epsquare(state->square_to_ep_num(to)); }
-
-    if(move.is_capture()) 
+    if(move_is_double(move)) { set_epsquare(state->square_to_ep_num(to)); }
+    
+    if(move_is_capture(move)) 
     { 
         state->half_move = 0;
         state_history[state_index - 1].captured_piece = list_to_type(to);
@@ -61,17 +68,12 @@ void Position::handle_specials(Move& move, Color us, Color enemy, Square from, S
         }
     }
     
-    if(move.is_castling()) { castling_support(us, from, to); }
+    if(move_is_castling(move)) { castling_support(us, from, to); }
 
-    if(move.is_enpassant()) { remove_piece(enemy, PAWN,  to + (enemy == BLACK ? SOUTH : NORTH)); }
 
-    if(state->castling_rights != 0 && (*piece == ROOK || *piece == KING)) { castling_permissions_support(us, from, *piece); }
-    
-    if(move.is_promoted()) 
-    {
-        remove_piece(us, PAWN, from);
-        *piece = move.get_promoted(); 
-    } 
+    if(move_is_enpassant(move)) { remove_piece(enemy, PAWN,  to + (enemy == BLACK ? SOUTH : NORTH)); }
+
+    if(state->castling_rights != 0 && (piece == ROOK || piece == KING)) { castling_permissions_support(us, from, piece); }
     
 }
 
@@ -175,7 +177,7 @@ void Position::clear_epsquare()
 void Position::unmake_move()
 {
     assert(state_index > 0);
-    //reptition_counter[state->hash]--;
+    reptition_counter[state->hash]--;
     Key saved_hash = state_history[state_index - 1].hash;
     swap_sides();
     state_index--;
@@ -185,24 +187,24 @@ void Position::unmake_move()
     Move move = state->move;
     const Square us = side_to_move;
     const Square enemy = side_to_move ^ 1;
-    const U8 from = move.get_from();
-    const U8 to = move.get_to();
-    Piece piece = move.get_piece();
+    const U8 from = move_get_from(move);
+    const U8 to = move_get_to(move);
+    Piece piece = move_get_piece(move);
 
     
-    move_piece(side_to_move, move.get_piece(), move.get_to(), move.get_from());
+    move_piece(side_to_move, move_get_piece(move), move_get_to(move), move_get_from(move));
 
-    if(move.is_promoted())
+    if(move_is_promoted(move))
     {
-        remove_piece(us, move.get_promoted(), to);
+        remove_piece(us, move_get_promoted(move), to);
     }
 
-    if(move.is_capture())
+    if(move_is_capture(move))
     {
         put_piece(enemy, state->captured_piece, to);
     }
 
-    if(move.is_castling())
+    if(move_is_castling(move))
     {
         const bool is_kingside = (to > from);
         U8 rook_from = 0;
@@ -222,7 +224,7 @@ void Position::unmake_move()
         move_piece(us, ROOK, rook_to, rook_from);
     }
 
-    if(move.is_enpassant())
+    if(move_is_enpassant(move))
     {
         Square ep_square = StateInfo::ep_num_to_square(state->ep_num);
         const U8 captured_square = ep_square + (us == WHITE ? SOUTH : NORTH);

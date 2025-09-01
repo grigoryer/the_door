@@ -211,16 +211,6 @@ Key Position::init_hash()
     return key;    
 }
 
-inline Square Position::get_king_square(Color color) const
-{
-    assert(get_piece(color, KING) != 0);
-    return lsb(get_piece(color, KING));
-}
-
-inline Bitboard Position::get_piece(Color color, Piece piece) const
-{
-    return piece_bb[piece] & color_bb[color];
-}
 
 void Position::set_check_squares(Color color)
 {  
@@ -398,10 +388,10 @@ bool Position::is_legal(Move m)
     Color us = side_to_move;
     Color enemy = us ^ 1;
     Square ksq = get_king_square(us);
-    Square from = m.get_from();
-    Square to = m.get_to();
+    Square from = move_get_from(m);
+    Square to = move_get_to(m);
 
-    if(m.is_enpassant())
+    if(move_is_enpassant(m))
     {
         
         Bitboard occ = occupancy;
@@ -418,7 +408,7 @@ bool Position::is_legal(Move m)
                 && !(attacks_bb<ROOK>(ksq, occ) & rook_attackers));
     }
 
-    if(m.is_castling())
+    if(move_is_castling(m))
     {
         Direction shift = (to > from ? EAST : WEST);
         Square cur = from;
@@ -430,7 +420,7 @@ bool Position::is_legal(Move m)
         }
     }
 
-    if(m.get_piece() == KING)
+    if(move_get_piece(m) == KING)
     {
         Bitboard occ = occupancy;
         occ ^= (1ULL << from); 

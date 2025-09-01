@@ -97,8 +97,17 @@ public:
 
     //utilities
     StateInfo& get_state();
-    inline Bitboard get_piece(Color color, Piece piece) const ;
-    inline Square get_king_square(Color color) const ;
+
+    inline Square get_king_square(Color color) const
+    {
+        assert(get_piece(color, KING) != 0);
+        return lsb(get_piece(color, KING));
+    }
+
+    inline Bitboard get_piece(Color color, Piece piece) const
+    {
+        return piece_bb[piece] & color_bb[color];
+    }
 
     bool is_check() const;
     bool is_double_check() const;
@@ -127,7 +136,7 @@ public:
     void make_move(Move move);
     void prepare_state(Move move);
     void handle_clock(Piece piece);
-    void handle_specials(Move& move, Color us, Color enemy, Square from, Square to, Piece* piece);
+    void handle_specials(Move& move, Color us, Color enemy, Square from, Square to, Piece piece);
     void move_piece(Color color, Piece piece, Square from, Square to);
     void remove_piece(Color color, Piece piece, Square sq);
     void put_piece(Color color, Piece piece, Square sq);

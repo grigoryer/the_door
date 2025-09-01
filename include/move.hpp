@@ -2,81 +2,69 @@
 #include "types.hpp"
 #include <array>
 #include <algorithm>
+#include <iostream>
 
 
+// Helper arrays for converting square index to file/rank
+inline const char files[] = "abcdefgh";
+inline const char ranks[] = "12345678";
 
+static const U8 to_shift        = 6;
+static const U8 piece_shift     = 12;
+static const U8 promoted_shift  = 16;
+static const U8 capture_shift   = 20;
+static const U8 double_shift    = 21;
+static const U8 enpassant_shift = 22;
+static const U8 castling_shift  = 23;
 
-class Move
-{
-private:
-    U32 move;
-    static const U32 FROM_MASK = 0x3F;        // 6 bits: 0-5
-    static const U32 TO_MASK = 0xFC0;       // 6 bits: 6-11
-    static const U32 PIECE_MASK = 0xF000;       // 4 bits: 12-15
-    static const U32 PROMOTED_MASK = 0xF0000;   // 4 bits: 16-19
-    static const U32 CAPTURE_MASK = 0x100000;   // 1 bit: 20
-    static const U32 DOUBLE_MASK = 0x200000;    // 1 bit: 21
-    static const U32 ENPASSANT_MASK = 0x400000; // 1 bit: 22
-    static const U32 CASTLING_MASK = 0x800000;  // 1 bit: 23
+// Bit masks for move encoding
+constexpr U32 FROM_MASK       = 0x3F;        // 6 bits
+constexpr U32 TO_MASK         = 0xFC0;       // 6 bits (shifted by 6)
+constexpr U32 PIECE_MASK      = 0xF000;      // 4 bits (shifted by 12)
+constexpr U32 PROMOTED_MASK   = 0xF0000;     // 4 bits (shifted by 16)
+constexpr U32 CAPTURE_MASK    = 0x100000;    // 1 bit
+constexpr U32 DOUBLE_MASK     = 0x200000;    // 1 bit
+constexpr U32 ENPASSANT_MASK  = 0x400000;    // 1 bit
+constexpr U32 CASTLING_MASK   = 0x800000;    // 1 bit
 
-public: 
+inline Move create_move(Square from, Square to, Piece piece, MoveType mt, bool capture = false, Piece promoted = NONE) {
 
-    Move();
-    Move(Square from, Square to, Piece piece, Piece promoted, 
-         bool capture = false, bool double_push = false, 
-         bool enpassant = false, bool castling = false);
-
-    // Getters
-    Square get_from() const;
-    Square get_to() const;
-    Piece get_piece() const;
-    Piece get_promoted() const;
-    bool is_capture() const;
-    bool is_double() const;
-    bool is_enpassant() const;
-    bool is_castling() const;
-    bool is_promoted() const;
-
-    // Setters
-    void set_from(Square source);
-    void set_to(Square target);
-    void set_piece(Piece piece);
-    void set_promoted(Piece promoted);
-    void set_capture(bool capture);
-    void set_double(bool double_push);
-    void set_enpassant(bool enpassant);
-    void set_castling(bool castling);
-
-    std::string n_to_sq(Square sq);
-    void print_move();
-
-
-    template<MoveType mt>
-    static Move create(Square from, Square to, Piece piece)
-    {
-        switch(mt)
-        {
-            case QUIET       : return Move(from, to, piece, NONE, false, false, false, false);
-            case(CAPTURE)    : return Move(from, to, piece, NONE, true, false, false, false);
-            case(ENPASSANT)  : return Move(from, to, piece, NONE, false, false, true, false);
-            case(DOUBLE)     : return Move(from, to, piece, NONE, false, true, false, false);
-            case(CASTLE)     : return Move(from, to, piece, NONE, false, false, false, true);
-        }
+    Move move = from | (to << to_shift) | (piece << piece_shift) | (promoted << promoted_shift) | (capture << capture_shift);
+    
+    switch(mt) {
+        case DOUBLE:  move |= DOUBLE_MASK; break;
+        case ENPASSANT: move |= ENPASSANT_MASK; break;
+        case CASTLE: move |= CASTLING_MASK; break;
+        default: break; 
     }
 
-};
+    return move;
+}
 
+inline Square move_get_from(U32 move)       { return move & FROM_MASK; }
+inline Square move_get_to(U32 move)         { return (move & TO_MASK) >> to_shift; }
+inline Piece move_get_piece(U32 move)       { return (move & PIECE_MASK) >> piece_shift; }
+inline Piece move_get_promoted(U32 move)    { return (move & PROMOTED_MASK) >> promoted_shift; }
+
+inline bool move_is_capture(U32 move)       { return move & CAPTURE_MASK; }
+inline bool move_is_double(U32 move)        { return move & DOUBLE_MASK; }
+inline bool move_is_enpassant(U32 move)     { return move & ENPASSANT_MASK; }
+inline bool move_is_castling(U32 move)      { return move & CASTLING_MASK; }
+inline bool move_is_promoted(U32 move)      { return move_get_promoted(move) != NONE; }
+
+
+void print_move(Move move);
 
 class MoveList
 {
 public:
-    std::array<Move, MAX_MOVES> move_list = {};
+    std::array<U32, MAX_MOVES> move_list;
     int count = 0;
 
     MoveList();
     void print_all();
     int get_count();
-    void add(const Move move);
-    void clear();
+    void add(const U32 move);
     Move get_move(int index);
+    void clear();
 };

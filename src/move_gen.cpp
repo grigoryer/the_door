@@ -11,13 +11,13 @@ void gen_promo(MoveList& move_list, Square from, Square to, bool capture)
 {
     if constexpr (Type == CAPTURES || Type == EVASIONS)
     {
-        move_list.add(Move(from, to, PAWN, QUEEN, capture, false, false, false));
+        move_list.add(create_move(from, to, PAWN, PROMOTION, capture, QUEEN));
     }
     if constexpr (Type != CAPTURES || Type == EVASIONS)
     {
-        move_list.add(Move(from, to, PAWN, KNIGHT, capture, false, false, false));
-        move_list.add(Move(from, to, PAWN, BISHOP, capture, false, false, false));
-        move_list.add(Move(from, to, PAWN, ROOK, capture, false, false,false));
+        move_list.add(create_move(from, to, PAWN, PROMOTION, capture, KNIGHT));
+        move_list.add(create_move(from, to, PAWN, PROMOTION, capture, ROOK));
+        move_list.add(create_move(from, to, PAWN, PROMOTION, capture, BISHOP));
     }
 }
 
@@ -50,12 +50,12 @@ void gen_pawns(const Position& pos, MoveList& move_list, Bitboard target)
         while(single_push)
         {
             Square to = pop_lsb(single_push);
-            move_list.add(Move::create<QUIET>(to - up, to,  PAWN));
+            move_list.add(create_move(to - up, to, PAWN, NORMAL));
         }
         while(double_push)
         {
             Square to = pop_lsb(double_push);
-            move_list.add(Move::create<DOUBLE>(to - up - up, to,  PAWN));
+            move_list.add(create_move(to - up - up, to, PAWN, DOUBLE));
         }
     }
 
@@ -74,13 +74,13 @@ void gen_pawns(const Position& pos, MoveList& move_list, Bitboard target)
         while(eat_right)
         {
             Square to = pop_lsb(eat_right);
-            move_list.add(Move::create<CAPTURE>(to - up_right, to,  PAWN));
+            move_list.add(create_move(to - up_right, to, PAWN, NORMAL, true));
         }
 
         while(eat_left)
         {
             Square to = pop_lsb(eat_left);
-            move_list.add(Move::create<CAPTURE>(to - up_left, to,  PAWN));
+            move_list.add(create_move(to - up_left, to, PAWN, NORMAL, true));
         }
 
         //en passant
@@ -91,7 +91,7 @@ void gen_pawns(const Position& pos, MoveList& move_list, Bitboard target)
 
             while(ep_attacks)
             {
-                move_list.add(Move::create<ENPASSANT>(pop_lsb(ep_attacks),ep,PAWN));
+                move_list.add(create_move(pop_lsb(ep_attacks), ep, PAWN, ENPASSANT));
             }
         }
     }
@@ -148,7 +148,8 @@ void gen_piece(const Position& pos, MoveList& move_list, Bitboard target)
 
             if(target & (1ULL << to))
             {   
-                move_list.add(Move(sq, to, pt, NONE, get_bit(pos.occupancy, to)));
+                move_list.add(create_move(sq, to, pt, NORMAL, get_bit(pos.occupancy, to)));
+                
             }
         }
     }
@@ -189,7 +190,7 @@ void generate_all(const Position& pos, MoveList& move_list)
     while(king_attacks)
     {
         Square to = pop_lsb(king_attacks);
-        move_list.add(Move(ksq, to, KING, NONE, get_bit(pos.color_bb[enemy], to)));
+        move_list.add(create_move(ksq, to, KING, NORMAL, get_bit(pos.color_bb[enemy], to)));
     }
 
     if constexpr (Type != CAPTURES && Type != EVASIONS)
@@ -202,8 +203,8 @@ void generate_all(const Position& pos, MoveList& move_list)
         
         U8 cr = pos.can_castle(us);
         
-        if((cr & king_side) == king_side) { move_list.add(Move::create<CASTLE>(from, to_king, KING)); }
-        if((cr & queen_side) == queen_side) { move_list.add(Move::create<CASTLE>(from, to_queen, KING)); }
+        if((cr & king_side) == king_side) { move_list.add(create_move(from, to_king, KING, CASTLE)); }
+        if((cr & queen_side) == queen_side) { move_list.add(create_move(from, to_queen, KING, CASTLE)); }
     }
 }
 

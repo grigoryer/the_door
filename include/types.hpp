@@ -8,10 +8,11 @@ using Color = int8_t;
 using Piece = int8_t;
 using U32 = uint32_t;
 using U8 = uint8_t;
+using Move = uint32_t;
 
 const int negative_infinity = -9999999;
 const int positive_infinity = 9999999;
-const int SEARCH_DEPTH = 5;
+const int SEARCH_DEPTH = 7;
 
 const int NUM_SQUARES = 64;
 const int NUM_COLOR = 2;
@@ -56,12 +57,12 @@ enum SLIDER : Piece
     queen_slider, rook_slider, bishop_slider,
 };
 
-
 enum PieceList : Piece
 {
     K = 0, Q = 1, R = 2, B = 3, N = 4, P = 5,
     k = 6, q = 7, r = 8, b = 9, n = 10, p = 11, no_piece = 12
 };
+
 enum Colors : Color
 {
     WHITE, BLACK
@@ -134,8 +135,7 @@ enum Ep_square : Square
 
 enum MoveType
 {
-    QUIET,
-    CAPTURE,
+    NORMAL,
     PROMOTION,
     ENPASSANT,
     CASTLE,

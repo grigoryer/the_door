@@ -103,14 +103,12 @@ void Position::perft_divide(int depth)
     int total_nodes = 0;
     
     for(int i = 0; i < move_list.get_count(); i++)
-    {
-        Move move = move_list.get_move(i);
-        
-        make_move(move);
+    {        
+        make_move(move_list.get_move(i));
         int nodes = perft(depth - 1);
         unmake_move();
         
-        move.print_move();
+        print_move(move_list.get_move(i));
         std::cout << "" << nodes << "\n";
         total_nodes += nodes;
     }
@@ -128,7 +126,6 @@ int Position::perft_debug(int depth)
     int nodes = 0;
 
     print_piece_board(*this);
-    move_list.print_all();    
     print_state_info(this);
 
 
@@ -140,7 +137,6 @@ int Position::perft_debug(int depth)
         Move move = move_list.move_list[i];
 
         make_move(move);
-        move.print_move(); std::cout << "\n";
         print_piece_board(*this);
         print_state_info(this);
         std::cin.get();
