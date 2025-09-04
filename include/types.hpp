@@ -6,6 +6,7 @@ using Key = uint64_t;
 using Square = int8_t;
 using Color = int8_t;
 using Piece = int8_t;
+using U64 = uint64_t;
 using U32 = uint32_t;
 using U8 = uint8_t;
 using Move = uint32_t;

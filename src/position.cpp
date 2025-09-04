@@ -177,7 +177,7 @@ void Position::init_piece_board()
         while (black_bb != 0)
         {
             Square square = lsb(black_bb);
-            piece_board[square] = (piece + NUM_PIECES); // k–p
+            piece_board[square] = (piece + NUM_PIECES); // k-p
             pop_bit(black_bb, square);
         }
     }

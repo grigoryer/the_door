@@ -36,3 +36,15 @@ void print_move(Move move)
     std::cout << files[from % 8] << ranks[from / 8]
               << files[to % 8]   << ranks[to / 8] << ": ";
 }
+
+void MoveList::print_all()
+{
+    
+    std::cout << "\nCount: " << count << "\n";
+
+    for(Move move : move_list)
+    {
+        print_move(move);
+        std::cout << "\n";
+    }
+}

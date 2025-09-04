@@ -27,6 +27,8 @@ constexpr U32 DOUBLE_MASK     = 0x200000;    // 1 bit
 constexpr U32 ENPASSANT_MASK  = 0x400000;    // 1 bit
 constexpr U32 CASTLING_MASK   = 0x800000;    // 1 bit
 
+const Move null_move = 0xffffffff;
+
 inline Move create_move(Square from, Square to, Piece piece, MoveType mt, bool capture = false, Piece promoted = NONE) {
 
     Move move = from | (to << to_shift) | (piece << piece_shift) | (promoted << promoted_shift) | (capture << capture_shift);

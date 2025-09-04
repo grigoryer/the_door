@@ -9,11 +9,11 @@
 template<GenType Type>
 void gen_promo(MoveList& move_list, Square from, Square to, bool capture)
 {
-    if constexpr (Type == CAPTURES || Type == EVASIONS)
+    if constexpr (Type == CAPTURES || Type == EVASIONS || Type == NON_EVASIONS) 
     {
         move_list.add(create_move(from, to, PAWN, PROMOTION, capture, QUEEN));
     }
-    if constexpr (Type != CAPTURES || Type == EVASIONS)
+    if constexpr (Type != CAPTURES || Type == EVASIONS || Type == NON_EVASIONS)
     {
         move_list.add(create_move(from, to, PAWN, PROMOTION, capture, KNIGHT));
         move_list.add(create_move(from, to, PAWN, PROMOTION, capture, ROOK));

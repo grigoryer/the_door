@@ -75,6 +75,8 @@ public:
     std::array<std::array<Bitboard, NUM_SQUARES>, NUM_SQUARES> between_array = {0ULL};
     std::array<std::array<Bitboard, NUM_SQUARES>, NUM_SQUARES> through_array = {0ULL};
 
+    bool draw_flag = false;
+    bool mate_flag = false;
 
 //member functions
     Position();
@@ -84,7 +86,7 @@ public:
     Key init_hash();
     void init_between();
     void fen_parser(const std::string& fen);
-    int perft(int depth);
+    uint64_t perft(int depth);
     void perft_divide(int depth);
     int perft_debug(int depth);
 
@@ -155,5 +157,5 @@ public:
 
 
 void print_piece_board(Position& pos);
-void print_state_info(const Position* pos);
+void print_state_info(const Position& pos);
 void test_correct();
