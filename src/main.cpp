@@ -12,14 +12,14 @@
 int main()
 {
 
-    Position pos(perft_4);
+    Position pos("8/8/8/8/3k4/2b1n3/8/3K4 w - - 0 1");
     Search eng(pos);
 
 
     print_piece_board(pos);
     print_state_info(pos);
 
-    while(std::cin.get())
+    /*while(true)
     {
         Move move = eng.search_root();
 
@@ -47,5 +47,9 @@ int main()
         print_piece_board(pos);
     }
 
+*/
+    std::cout << sizeof(pos) << "\n";
+    std::cout << sizeof(eng) << "\n";
+    std::cout << sizeof(*eng.tt.table) << "\n";
     return 0;
 }

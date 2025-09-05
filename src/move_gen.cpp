@@ -225,8 +225,6 @@ void generate(Position& pos, MoveList& move_list)
     }
 }
 
-template void generate<QUIETS>(Position& pos, MoveList& move_list);
-template void generate<CAPTURES>(Position& pos, MoveList& move_list);
 template void generate<EVASIONS>(Position& pos, MoveList& move_list);
 template void generate<NON_EVASIONS>(Position& pos, MoveList& move_list);
 
@@ -242,7 +240,6 @@ void generate<LEGAL>(Position& pos, MoveList& move_list)
     else
         generate<NON_EVASIONS>(pos, move_list);
 
-    // Step 2: Compact in-place, keeping only legal moves
     int j = 0;
     for (int i = 0; i < move_list.count; i++)
     {

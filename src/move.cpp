@@ -1,14 +1,9 @@
 #include "move.hpp"
-#include "types.hpp"
+#include "eval.hpp"
+#include "position.hpp"
 #include <cassert>
-#include <string>
 #include <iostream>
 
-
-int MoveList::get_count()
-{
-    return count;
-}
 
 void MoveList::add(const U32 move) {
     move_list[count++] = move;
@@ -34,7 +29,7 @@ void print_move(Move move)
     Square to   = (move & TO_MASK) >> 6;
 
     std::cout << files[from % 8] << ranks[from / 8]
-              << files[to % 8]   << ranks[to / 8] << ": ";
+              << files[to % 8]   << ranks[to / 8];
 }
 
 void MoveList::print_all()
@@ -46,5 +41,33 @@ void MoveList::print_all()
     {
         print_move(move);
         std::cout << "\n";
+    }
+}
+
+
+void MoveList::score_moves(const Position& pos)
+{
+    for(int i = 0; i < count; i++)
+    {   
+        int move_score = 0;
+        Move move = move_list[i];
+
+        Square to = move_get_to(move);
+        Square from = move_get_from(move);
+        Piece piece = move_get_piece(move);
+
+        if(move_is_promoted(move))
+        {
+            Piece promoted_piece = move_get_promoted(move);
+            move_score += piece_values[promoted_piece];
+        }
+
+        if(move_is_capture(move))
+        {
+            Piece capture_piece = pos.piece_board[static_cast<int>(from)];
+            move_score += (capture_piece - piece);
+        }
+
+        //scores[i] = move_score;
     }
 }

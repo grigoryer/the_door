@@ -6,14 +6,14 @@ using Key = uint64_t;
 using Square = int8_t;
 using Color = int8_t;
 using Piece = int8_t;
+using Score = int16_t;
 using U64 = uint64_t;
 using U32 = uint32_t;
 using U8 = uint8_t;
 using Move = uint32_t;
 
-const int negative_infinity = -9999999;
-const int positive_infinity = 9999999;
-const int SEARCH_DEPTH = 7;
+const Score negative_infinity = static_cast<Score>(-999999);
+const Score positive_infinity = static_cast<Score>(999999);
 
 const int NUM_SQUARES = 64;
 const int NUM_COLOR = 2;
@@ -24,11 +24,10 @@ const int NUM_CASTLING = 16;
 
 const int NUM_EPSQUARES = 17;
 
-const int MAX_MOVES = 256;
+const int MAX_MOVES = 128;
 const int MAX_HISTORY = 512;
 
 const Bitboard FullBB = 0xFFFFFFFFFFFFFFFFULL;
-
 const Bitboard FileABB = 0x0101010101010101ULL;
 const Bitboard FileBBB = FileABB << 1;
 const Bitboard FileCBB = FileABB << 2;
@@ -37,7 +36,6 @@ const Bitboard FileEBB = FileABB << 4;
 const Bitboard FileFBB = FileABB << 5;
 const Bitboard FileGBB = FileABB << 6;
 const Bitboard FileHBB = FileABB << 7;
-
 const Bitboard Rank1BB = 0xFF;
 const Bitboard Rank2BB = Rank1BB << (8 * 1);
 const Bitboard Rank3BB = Rank1BB << (8 * 2);
@@ -124,7 +122,7 @@ enum Castling : U8
 };
 
 
-enum Ep_square : Square
+enum EpSquare : Square
 {
     ep_white_a, ep_white_b, ep_white_c, ep_white_d,
     ep_white_e, ep_white_f, ep_white_g, ep_white_h,

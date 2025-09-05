@@ -5,7 +5,7 @@
 #include <algorithm>
 
 
-const int INITIAL_DEPTH = 6;
+const int INITIAL_DEPTH = 7;
 
 
 
@@ -61,7 +61,7 @@ Move Search::search_root()
 
 
  
-int Search::nega_max(int depth, int alpha, int beta)
+Score Search::nega_max(int depth, int alpha, int beta)
 {
     if(depth == 0) { return Evalution::evaluate(pos); } 
     
@@ -84,10 +84,12 @@ int Search::nega_max(int depth, int alpha, int beta)
         }
     }
 
+    ml.score_moves(pos);
     int best_score = negative_infinity;
 
     for(int i = 0; i < ml.count; ++i)
     {
+        next_best_move(ml, i, ml.count);
         pos.make_move(ml.get_move(i));
         int score = -nega_max(depth - 1, -beta, -alpha);
         pos.unmake_move();
@@ -102,3 +104,18 @@ int Search::nega_max(int depth, int alpha, int beta)
 
     return best_score;
 }
+
+
+Move Search::next_best_move(MoveList& ml, int start, int end)
+{
+    int best = start;
+
+    for(int i = start + 1; i < end; i++) {
+        if (ml.scores[i] > ml.scores[best])
+            best = i;
+    }
+    std::swap(ml.scores[start], ml.scores[best]);
+    std::swap(ml.move_list[start], ml.move_list[best]);
+    return ml.move_list[best];
+}
+

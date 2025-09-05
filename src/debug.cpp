@@ -103,7 +103,7 @@ void Position::perft_divide(int depth)
     
     uint64_t total_nodes = 0;
     
-    for(int i = 0; i < move_list.get_count(); i++)
+    for(int i = 0; i < move_list.count; i++)
     {        
         make_move(move_list.get_move(i));
         int nodes = 0;

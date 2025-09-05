@@ -10,14 +10,18 @@ enum GenType
     CAPTURES,
     QUIETS,
     NON_EVASIONS,
-    LEGAL
+    LEGAL,
+    ALL
 };
 
 
 
-template <GenType Type>
+template <GenType Type, GenType Eat>
 void generate(Position& pos, MoveList& move_list);
 
+
+template <GenType Type>
+void generate(Position& pos, MoveList& move_list);
 
 
 extern template void generate<QUIETS>(Position& pos, MoveList& move_list);

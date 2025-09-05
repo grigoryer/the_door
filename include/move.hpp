@@ -2,8 +2,11 @@
 #include "types.hpp"
 #include <array>
 #include <algorithm>
+#include <cstddef>
 #include <iostream>
 
+
+class Position;
 
 // Helper arrays for converting square index to file/rank
 inline const char files[] = "abcdefgh";
@@ -61,12 +64,14 @@ class MoveList
 {
 public:
     std::array<U32, MAX_MOVES> move_list;
-    int count = 0;
+    std::array<Score, MAX_MOVES> scores;
+    size_t count = 0;
 
     MoveList();
-    void print_all();
-    int get_count();
-    void add(const U32 move);
+    void add(const Move move);
     Move get_move(int index);
+    void print_all();
     void clear();
+
+    void score_moves(const Position& pos);
 };
